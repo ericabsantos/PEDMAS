@@ -1,0 +1,329 @@
+---
+output:
+  html_document:
+    theme: readable
+    df_print: paged
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# set global doc options:
+# do not include warning messages
+# in the knitted document
+knitr::opts_chunk$set( warning=F, message=F )
+```
+
+# Lab 02 - Equivalence Tests 
+
+**PAF 511**
+
+Erica Santos
+
+---------------
+ 
+**Packages**
+
+```{r}
+library( dplyr )
+library( pander )
+library( ggplot2 )
+```
+
+**Data**
+
+```{r}
+# load lab data
+URL <- "https://github.com/DS4PS/cpp-524-sum-2020/blob/master/labs/data/female-np-entrepreneurs.rds?raw=true"
+dat <- readRDS(gzcon(url( URL )))
+head( dat )
+```
+
+
+
+
+# QUESTIONS
+
+
+## Question 1 
+
+Compare education levels of male and female entrepreneurs.
+
+* Variable Name: **edu.level** 
+* Variable Type: **factor**
+* Survey question: *What is the highest level of education you have achieved?*
+
+
+```{r}
+# cross-tab of counts
+t <- table(dat$gender, dat$edu.level, deparse.level=2)
+t %>% prop.table(margin=1)%>% round(2)%>% pander()
+chisq.test(t, simulate.p.value=TRUE, B10000)
+
+
+#visualize
+library(ggplot2)
+ggplot(dat, aes(x=edu.level, fill=gender)) +
+  geom_bar(position="dodge") +
+  labs(x="Education Level", y="Count", fill="Gender", title="Education Level by Gender")
+
+```
+
+**ANSWER:** 
+
+** Male and female entrepreneurs have very similar education profiles, roughly 40% of females and 32% of men have a Bachelor's degree and 52% of females and 58% of males have a graduate degree. A chi-square test finds no significant association between gender and the highest education level. 
+
+ * **χ²=4.38**
+ * **df=4**
+ * **p= 0.357**
+
+Therefore, we fail to reject the null hypothesis - no evidence of a gender difference in education. 
+
+
+
+## Question 2 
+
+Compare work experience for male and female entrepreneurs.
+
+* Variable Name: **years.prof.exp** 
+* Variable Type: **factor**
+* Survey question: *How many years of professional experience did you have prior to starting the nonprofit?*
+
+```{r}
+
+table_exp <- table(dat$gender, dat$years.prof.exp)
+table_exp%>% prop.table(margin=1) %>% round(2) %>% pander
+chisq.test(table_exp,simulate.p.value = TRUE, B=10000)
+
+ggplot(dat, aes(x=years.prof.exp, fill=gender)) +
+  geom_bar(position="dodge") +
+  labs(x="Years of Professional Experience", y="Count", fill="Gender", title="Professional Experience by Gender")
+
+```
+
+***ANSWER***
+
+Distributions are relatively close, roughly two-thirds of both genders, men at 72.2% and women and 66.6%, had 15+ years of experience before founding. 
+
+***Chi-square:***
+
+ * **χ²=4.01**
+ * **df=5**
+ * **p= 0.548**
+ 
+ We fail to reject the null hypothesis. There is no evidence of a gender difference in prior work experience. 
+
+## Question 3 
+
+Compare success in accessing seed funding for male and female entrepreneurs.
+
+* Variable Name: **seed.funding** 
+* Variable Type: **factor** 
+* Survey question: *Did you receive any SEED FUNDING to start the organization? Seed funding supports development of the organization without requiring deliverables or program activities. Seed funding could also include funding for pilot programs.*
+
+```{r}
+
+table_seed<-table(dat$gender,dat$seed.funding)
+table_seed%>% prop.table(margin=1) %>% round(2) %>% pander
+chisq.test(table_seed,simulate.p.value = TRUE, B=10000)
+
+ggplot(dat,aes(x=seed.funding, fill=gender))+
+  geom_bar(position="dodge")+
+    labs(x="Received Seed Funding", y="Count", fill="Gender", title="Seed Funding Access by Gender")
+
+``` 
+***ANSWER***
+
+Access to seed funding is nearly identical at 25.1% of women and 25.8% of men receiving seed funding.
+
+
+***Chi-Square***
+
+
+* **χ²=0.009**
+* **df=1**
+* **p= 0.926**
+
+We fail to reject the null hypothesis. There is no evidence of a gender gap in access to seed funding.
+
+
+## Question 4 
+
+Compare the willingness to take on personal debt for male and female entrepreneurs. 
+
+* Variable Name: **take.on.debt** 
+* Variable Type: **factor** 
+* Survey question: *Have any members of the organization taken on debt to finance the organization? Collectively:*
+
+```{r}
+
+table_debt<-table(dat$gender, dat$take.on.debt)
+table_debt%>% prop.table(margin=1) %>% round(2) %>% pander
+chisq.test(table_debt,simulate.p.value = TRUE, B=10000)
+
+ggplot(dat,aes(x=take.on.debt, fill=gender))+
+  geom_bar (position="dodge")+
+  labs(x="Personal Debt Taken On", y="Count", fill="Gender", title="Willingness to Take on Debt by Gender")
+
+```
+
+***ANSWER***
+
+Men have a slightly higher rate of men taking on larger debt amounts, 5.4% for men and 2.5% for women at $50k+, 82.6% of women took on 0% debt versus 77.3% of men.
+
+
+***Chi-Square***
+
+
+* **χ²=8.62**
+* **df=4**
+* **p= 0.071**
+
+This is so far the closest contrast to significance, but still fails to reject the null hypothesis at α = 0.05.
+
+## Question 5 
+
+Compare sources of first year funding for male and female entrepreneurs. 
+
+* Variable Name: **most.imp.fund.source** 
+* Variable Type: **factor** 
+* Survey question: *From the list of funding sources, which has been the MOST important in your first year of operations? Choose one.*
+
+```{r}
+
+table_fund<-table(dat$gender, dat$most.imp.fund.source)
+table_fund%>% prop.table(margin=1) %>% round(2) %>% pander
+chisq.test(table_fund,simulate.p.value = TRUE, B=10000)
+  
+  ggplot (dat,aes(x=most.imp.fund.source,fill=gender))+
+    geom_bar (position="dodge")+
+      labs (x="Most Important Funding Source", y="Count", fill="Gender", title="First Year Funding Source by Gender") +
+      theme(axis.text.x = element_text(angle=45, hjust=1))
+    
+```
+
+***ANSWER***
+
+Funding source mix is broadly similar across genders, with Donations and Member Fees being the top source for both, showing that women have a sligh increase in reliance on Member Fees. 
+
+
+***Chi-Square***
+
+
+* **χ²=883**
+* **df=8**
+* **p= 0.352**
+
+We fail to reject the null hypothesis, as there is no evidence of a gender difference in first year funding sources. 
+
+
+## Question 6 
+
+Compare age at the time of nonprofit formation for male and female entrepreneurs. 
+
+* Variable Name: **age** 
+* Variable Type: **numeric** 
+* Survey question: *What was your age when you created the nonprofit?*
+
+```{r}
+dat%>%
+  group_by(gender)%>%
+ summarize(min.age = min(age,na.rm=T),
+      median.age = median(age,na.rm=T),
+      mean.age = mean(age,na.rm=T),
+      max.age = max(age,na.rm=T)) %>%
+pander()
+                      
+
+ggplot(dat,aes(x=age, fill=gender))+
+    geom_density(alpha=0.5)
+xlab("Age")
+  labs(x="Gender",y="Age at Founding",title="Age at Nonprofit formation by Gender")
+  
+  
+```
+```{r}
+
+t.test(age~gender,data=dat)
+
+```
+
+***ANSWER***
+
+Men were older at founding on average with an average age of 55.0 years old and a SD=12.9, than women at 51.9 years old with a SD=11.6. This difference is ***statistically significant*** 
+
+* ***t=3.17***
+* ***p=0.0016***
+
+We reject the null hypothesis. Men founded their non profits approximately three years later in life, on average, than women. 
+
+
+## Question 7 
+
+Compare income levels prior to starting the nonprofit for male and female entrepreneurs. 
+
+* Variable Name: **income** 
+* Variable Type: **numeric** 
+* Survey question: *Please specify your income range prior to working to create this nonprofit:*
+
+```{r}
+dat%>%
+  group_by(gender)%>%
+  summarize(min.income=min(income, na.rm=T),
+            median.income=median(income,na.rm=T),
+            mean.income=mean(income, na.rm=T),
+            max.income=max(income,na.rm=T)) %>%
+  
+  pander()
+
+ggplot(dat,aes(x=income, fill=gender))+
+         geom_density(alpha=0.5)+
+  xlab("Income")
+         labs(x="Gender",y="Pre-Founding Income", title="Income Prior to Founding by Gender")
+       
+```
+```{r}
+t.test(income~gender, data=dat)
+```
+
+***ANSWER***
+
+Men reported a substatially higher pre-founding income, $80.0883 average, SD=$45,939, than women at $67,742 average, SD=$46,266. This is statistically significant.
+
+* ***t=3.64***
+* ***p=0.0003***
+
+We reject the null hypothesis. Men in entrepreneurship had significantly higher income than females prior to founding. 
+
+## Question 8
+
+Based upon these seven contrasts, would you conclude that the resources male and female nonprofit entrepreneurs have at the time of founding were equivalent?
+
+No. While five of the seven resources show no meaningfullness in gender differences, the two that do play a significant role. 
+
+* ***Age at Founding*** : Men were on average 3.1 years older than women at the time if founding. (p=0.0016)
+* ***Pre-Founding Income***: Men Averaged $13,141 in additional income over women prior to founding.  (p=0.0003)
+
+These factors are ideal to give one group a head start independent of anything about the venture itself. Someone who is older, likely has additional savings, more professional networks available, and more availability to absorb early losses. 
+
+**Q8-A:**
+
+What is the adjusted decision criteria used for contrasts to maintain an alpha of 0.05 for the omnibus test of group equivalence? 
+
+With seven contrasts and a desired family wise α of 0.05, the Bonferroni adjust critical value per test is:
+
+$$\alpha_{adjusted} = \frac{0.05}{7} = 0.00714$$
+
+Any individual contrast needs p<0.00714 to be declared significnat while controlling the over all false-positive rate across all seven tests. 
+
+**Q8-B:**
+
+What is the lowest p-value you observed across the seven contrasts? 
+
+The lowest observed p-value across all seven tests is p=0.0003 in regards to income. 
+
+**Q8-C:**
+
+Can we claim study group equivalency? Why or why not? 
+
+Group equivalence cannot be claimed. Of the seven contrasts, five remain insignificant to gender differences in regards to education, eperience, seed funding, debt, and funding source, however, two survive even with Bonferroni correction. Age with a p=0.0016 and income with a p=0.0003 both significantly below the 0.00714 threshold. This information means that male and female entrepreneurs entering a nonprofit founding with meaninfully difference personal resources, men were older and had higher pre-founding income. Since these resources, financial capital and career-stage capital, are linked to affecting seed funding, debt capacity, and organizational survival, this becomes a threat to treating male and female founders as pre-existing equivalent groups in any downstream comparison, since the baseline isn't balanced on these dimesions even after adjusting and with multiple comparisons. 
+
