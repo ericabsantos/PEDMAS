@@ -1,0 +1,355 @@
+---
+title: "Lab-04 Dynamic Graphics"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r global, include = FALSE}
+
+  # PROVIDED CODE
+
+      # The following code was provided in the
+      # .Rmd file used for the Lab 04 template.
+
+      # What does it do? It "preprocesses" 
+      # your data - that is, it prepares your 
+      # data for the visualization and app.
+
+      # These are also known as "variable
+      # transformations", since you are trans-
+      # forming existing variables to make 
+      # new ones.
+
+      # Only one additional line of code was 
+      # required, which is added at the very 
+      # bottom.
+
+
+library(Lahman)
+library(shiny)
+library(pander)
+library(dplyr)
+data(Teams)
+
+ave.so <- Teams$SO / Teams$G
+year <- Teams$yearID
+
+ave.so.min <- min(ave.so, na.rm = TRUE)
+ave.so.max <- max(ave.so, na.rm = TRUE)
+
+league.ave <- tapply(X = ave.so, 
+                     INDEX = as.factor(year), 
+                     FUN = "mean", 
+                     na.rm = TRUE)
+
+league.year <- as.numeric(names(league.ave))
+
+
+  # REQUIRED ADDITIONAL CODE
+
+      # This line takes the vector of team 
+      # averages, 'ave.so', and appends it to 
+      # the dataset 'Teams' as a new variable.
+
+  # HOW IT WORKS
+
+      # When you assign values to a non-
+      # existent variable by using '$' on an 
+      # existing dataset, you create a new, 
+      # permanent variable in the dataset.
+
+      # For example:
+      # 'dat$new_variable <- some_vector'
+
+      # Dataset 'dat' would now have a new 
+      # variable, called 'new_variable', 
+      # that contains the values of
+      # vector 'some_vector'.
+
+Teams$ave.so <- ave.so
+
+```
+
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Select a team to highlight on the graph.
+
+```{r}
+
+  # REQUIRED CODE: ADD ARGUMENT PARAMETERS
+
+      # The following is required to set 
+      # up the widgets in your app.
+
+
+selectInput(
+  
+  
+      # Specifically and respectively, it 
+      # names your "reactive" object, for 
+      # later use in your visualization 
+      # ('inputId ='). This can be named 
+      # anything that doesn't have oper-
+      # ators (e.g. '$' or '>'). You just
+      # have to make sure that this name 
+      # is used again in 'renderPlot()'.
+  
+  
+  inputId = "team",
+  
+  
+      # It also sets up a prompt for your 
+      # widget with argument 'label ='. 
+      # This could be anything, but it's
+      # an opportunity to guide your app
+      # end users and improve their UX
+      # (user experience), e.g. "Choose 
+      # team." or "Pick your favorite:".
+  
+  
+  label = "Select a team:",
+  
+  
+      # It provides the choices available
+      # for end users to select in argu-
+      # ment 'choices ='. While you could
+      # have used something like:
+      # 'unique(Teams$name)[1:25]', you
+      # may have found that many of the 
+      # early-mentioned teams don't have
+      # a lot 21st century data. 
+      # Therefore, it's easier to name
+      # teams manually within 'c()'!
+  
+      # Here are a few examples to get
+      # you started.
+  
+  
+  choices = c("Cincinnati Reds", "Pittsburgh Pirates", "Philadelphia Phillies",
+                               "St. Louis Cardinals", "Chicago White Sox", "Detroit Tigers",
+                               "Chicago Cubs", "Boston Red Sox", "New York Yankees",
+                               "Cleveland Indians", "Atlanta Braves", "Los Angeles Dodgers",
+                               "San Francisco Giants", "Baltimore Orioles", "Minnesota Twins",
+                               "Texas Rangers", "Oakland Athletics", "New York Mets",
+                               "Houston Astros", "Kansas City Royals"),
+  
+  
+      # Lastly, you can select a default 
+      # value for your selected team by 
+      # using argument 'selected ='. The
+      # app plots this team by default.
+  
+ selected = "Cincinnati Reds"
+  )
+
+```
+
+
+**Author:** Erica Santos
+
+**Date:**  `r format(Sys.time(), '%B %d, %Y')`
+
+
+Column
+-----------------------------------------------------------------------
+
+### Strikeouts on the Rise
+
+```{r}
+
+renderPlot({
+
+index <- which(Teams$yearID <= 2012 & Teams$yearID >= 1900)
+
+Teams <- Teams[index, ]
+  
+index <- which(year <= 2012 & year >= 1900)
+
+ave.so <- ave.so[index]
+year <- year[index]
+
+index <- which(league.year <= 2012 & league.year >= 1900)
+
+league.ave <- league.ave[index]
+league.year <- league.year[index]
+
+
+
+team.name <- input$team                  # 'team.name' takes the name of selected team
+                                            # Calls to 'input$' must occur in 'renderPlot({...})'
+
+dat.one.team <- filter(Teams, 
+                       name == team.name)   # Filtering to include only selected team
+
+                                            # You now have to use 'dat.one.team' in your
+                                            # visualization's code for the "highlighted"
+                                            # team trend line
+plot.new()
+
+
+plot.window(xlim = c(1900, 2012), 
+            ylim = c(ave.so.min, 
+                     ave.so.max))
+
+points(x = year, 
+       y = ave.so,
+       col = "gray85",
+       pch = 16,
+       cex = 0.75)
+
+par(mar = c(2,1,3,4), 
+    oma = c(0,0,0,0))
+
+plot.new()
+
+
+plot.window(xlim = c(1900, 2012),   # Specify x-axis limits 
+            ylim = c(ave.so.min, ave.so.max), # Specify y-axis limits
+            main = 'type = "o"',
+            xlab="",
+            ylab="",
+            col.axis = "gray60",
+           frame.plot = F)  
+#Title
+
+text(x= 1896, y = 10, 
+     labels = "Strikeouts on the Rise",
+     adj= 0, font = 1, cex = 1.8)
+
+#Subtitle
+text(x = 1896, y = 9.5,
+     labels = "There were more strikeouts in 2012 than at any other time in major league history.",
+      adj = 0,font = 1, cex = 0.9, col = "gray40")
+
+abline(h = seq(from = 0, to = 9, by = 1),
+      col = "gray70",
+      lty = 2, # dashed
+      lwd = 0.5)
+
+keep <- ave.so >= 2
+points(x = year[keep], 
+       y = ave.so[keep],
+       col = "gray85",              # Color
+       pch = 16,                    # Shape
+       cex = 0.75)                  # Size
+
+
+# Bold portion
+text(x = 1896, y = 9.2, 
+     labels = "Strikeouts per game per team", 
+     adj = 0, font = 2, cex = 0.9)
+# Regular portion, positioned right after the bold text ends
+bold.width <- strwidth("Strikeouts per game per team    ", cex = 0.9)
+
+text(x = 1896 + bold.width, y = 9.2, labels = "(by batters)", 
+     adj = 0, font = 1, cex = 0.9, col = "gray50")
+
+# Legend
+
+legend.x <-1896
+legend.y <- 8.75
+
+segments(x0 = legend.x, x1 = legend.x + 4, y0 = legend.y, y1 = legend.y, 
+         col = "steelblue4", lwd = 1, xpd = NA)
+
+points(x = c(legend.x,legend.x + 4), y=c(legend.y, legend.y), col = "steelblue4", pch = 16, cex = 0.9)
+
+text(x = legend.x + 9, y = legend.y, labels = "League Average", col = "steelblue4", adj = 0.2, cex = 0.8, font = 1)
+
+
+
+segments(x0 = legend.x, x1 = legend.x + 4, y0 = legend.y - 0.35, y1 = legend.y - 0.35, 
+         col = "darkorange4", lwd = 1, xpd = NA)
+
+points(x = c(legend.x,legend.x + 4), y=c(legend.y  -0.35, legend.y - 0.35), col = "darkorange4", pch = 16, cex = 0.9)
+
+text(x = legend.x + 8.7, y = legend.y - 0.35, labels = "Selected Team", col = "darkorange4", adj = 0.2, cex = 0.8, font = 1)
+
+
+#Teams
+
+unique(Teams$name) %>% head ()
+unique (Teams$name) %>% length()
+
+axis(side = 1, lwd = 1, at = seq(from = 1890, to = 2020, by = 10))
+
+# Y axis 
+
+axis(side = 4, 
+     lwd = 0, 
+     las = 1, 
+     col.axis = "gray80",
+     at = seq(from = 0, to = 9, by = 1), font.axis = 2)
+
+
+# League Trendline
+
+league.avg <- aggregate(ave.so ~ year, 
+                    data = data.frame(year = year[keep], ave.so = ave.so[keep]), 
+                    FUN = mean, na.rm = TRUE)
+
+league.avg <- league.avg[league.avg$ave.so >= 1, ]
+
+# Plotting Code
+
+lines(x = league.avg$year, y = league.avg$ave.so, col = "steelblue4", lwd = 2)
+
+keep <- ave.so >= 1
+
+points(x = league.avg$year, y = league.avg$ave.so, col = "steelblue4", pch = 16, cex = 1)
+
+
+# "Event years" 
+
+events <- c(1918, 1945, 1963, 1969, 1973, 2007)
+label.y <- c(1.3, 1.8, 2.9, 8, 1.8, 3.9)
+event.labels <- c("U.S. enters\nWorld War I.",
+            "Players return\nfrom World War II.",
+            "Strike zone enlarged\nfrom 1963-68.",
+            "Pitching had become so dominant\nin the 1960s   that the mound\nwas lowered in 1969.","Designated hitter rule\n took effect.", "Mitchell report\non steroids.")
+
+#Define label heights
+
+event.y <- league.avg$ave.so[match(events,league.avg$year)]
+
+segments(x0 = events, x1 = events,      
+         y0 = event.y, y1 = label.y,
+         col = "gray50", lty = 1, lwd = 0.75)
+
+text(x = events, y = label.y, labels = event.labels, 
+     cex = 0.85, col = "gray70", 
+     pos = c(1,1,1,3,1,1))
+
+# "Major points" 
+
+highlight.years <- c(1924, 2012)
+highlight.y <- league.avg$ave.so[match(highlight.years, league.avg$year)]
+
+points(x = highlight.years, y = highlight.y, pch = 1, cex = 1.8, col = "steelblue4")
+
+text(x = 1924, y = 2.7, labels = "2.7", pos = 1, offset = .75,  cex = 1.4, col = "steelblue4", font = 2)
+text(x = 2010, y = 7.5, labels = "7.5", pos = 3, offset = .75,  cex = 1.4, col = "steelblue4", font = 2)
+
+# "League average" sub-levels
+text(x = 1924, y = 2.1, labels = "League average\n1924", 
+     cex = 0.7, col = "black", pos = 1, font = 2, offset = 0.15)
+text(x = 2010, y = 7.5, labels = "2012\nLeague average", 
+     cex = 0.7, col = "black", pos = 3, font = 2, offset = 1.8)
+
+#Team trendlind
+Teams$ave.so<- Teams$SO/Teams$G
+
+one.team <- filter(Teams, name == input$team)
+
+points(x=one.team$yearID, y = one.team$ave.so, 
+       type = "b", pch = 19, col = "darkorange4")
+})
+```
+  
+
+
+```
+

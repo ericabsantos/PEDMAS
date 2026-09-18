@@ -1,0 +1,249 @@
+---
+title: "Lab 01 - Functions and Vectors"
+author: "Erica Santos"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    theme: cerulean
+    highlight: haddock
+    toc: yes
+    toc_float: yes
+---
+
+```{r include = FALSE}
+
+    # CODE CHUNKS
+
+        # This is a "code chunk" - R evaluates the code inside and prints results
+        # These "chunks" begin with "```{r}" and end with "```"
+
+        # Inside {r}, we can modify the chunk behavior
+        # Above, we tell R not to "include" this chunk
+
+    # GLOBAL OPTIONS
+
+        # Typically, the first "chunk" tells R how to create your report
+        # Below, we tell R to repeat code and disable messages/warnings
+
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      warning = FALSE)
+
+    # KNITTING
+
+        # "Knitting" a .RMD file is essentially turning it into a data product
+        # Even without your answers, this is ready to knit!
+
+        # Click on "Knit" in the upper-left corner to turn this into a report
+        # Notice that this "chunk" will not appear in your knitted report!
+
+```
+
+<br>
+
+# Source Data
+
+The following report analyzes tax parcel data from Syracuse, New York (USA).
+
+View the "Data Dictionary" here: 
+[**Syracuse City Tax Parcel Data**](https://watts-college.github.io/cpp-526-fall-2022/labs/syr_parcels.html)
+
+<br>
+<br>
+
+# Importing the Data
+
+The following code imports the Syracuse, NY tax parcel data using a URL.
+
+```{r cache = TRUE}
+
+url <- paste0("https://raw.githubusercontent.com/DS4PS/Data",
+              "-Science-Class/master/DATA/syr_parcels.csv")
+
+dat <- read.csv(url, 
+                strings = FALSE)
+
+```
+
+<br>
+<br>
+
+# Previewing the Data
+
+There are several exploratory functions to better understand our new dataset.
+
+We can inspect the first 5 rows of these data using function `head()`.
+
+<br>
+
+```{r}
+
+head(dat, 5)              # Preview a dataset with 'head()'
+
+```
+
+<br>
+
+### Listing All Variables
+
+Functions `names()` or `colnames()` will print all variable names in a dataset.
+
+<br>
+
+```{r}
+
+names(dat)                # List all variables with 'names()'
+
+```
+
+<br>
+
+### Previewing Specific Variables
+
+We can also inspect the values of a variable by extracting it with `$`.
+
+The extracted variable is called a "vector".
+
+<br>
+
+```{r}
+
+head(dat$owner, 10)       # Preview a variable, or "vector"
+
+```
+
+<br>
+
+### Listing Unique Values
+
+Function `unique()` helps us determine what values exist in a variable.
+
+<br>
+
+```{r}
+
+unique(dat$land_use)      # Print all possible values with 'unique()'
+
+```
+
+<br>
+
+### Examining Data Structure
+
+Function `str()` provides an overview of total rows and columns (dimensions), 
+variable classes, and a preview of values.
+
+<br>
+
+```{r}
+
+str(object = dat,
+    vec.len = 2)          # Examine data structure with 'str()'
+
+```
+
+<br>
+<br>
+
+# Questions & Solutions
+
+**Instructions:** Provide the code for each solution in the following "chunks".
+
+*Remember to modify the text to show your answer in human-readable terms.*
+
+<br>
+
+## Question 1: Total Parcels
+
+**Question:** *How many tax parcels are in Syracuse, NY?* 
+
+**Answer:** There are **41502** tax parcels in Syracuse, NY. 
+
+<br>
+
+```{r}
+
+nrow(dat)
+```
+
+<br>
+
+## Question 2: Total Acres
+
+**Question:** *How many acres of land are in Syracuse, NY?*
+
+**Answer:** There are **12510.49** acres of land in Syracuse, NY.
+
+<br>
+
+```{r}
+
+sum(dat$acres, na.rm=TRUE)
+```
+
+<br>
+
+## Question 3: Vacant Buildings
+
+**Question:** *How many vacant buildings are there in Syracuse, NY?*
+
+**Answer:** There are **1888** vacant buildings in Syracuse, NY.
+
+<br>
+
+```{r}
+
+sum(dat$vacantbuil, na.rm=TRUE)
+```
+
+
+## Question 4: Tax-Exempt Parcels
+
+**Question:** *What proportion of parcels are tax-exempt?*
+
+**Answer:** **10.7** of parcels are tax-exempt.
+
+<br>
+
+```{r}
+
+round(sum(dat$tax.exempt, na.rm = TRUE)/length(dat$tax.exempt)*100,2)
+```
+
+<br>
+
+## Question 5: Neighborhoods & Parcels
+
+**Question:** *Which neighborhood contains the most tax parcels?*
+
+**Answer:** **Eastwood** contains the most tax parcels.
+
+<br>
+
+```{r}
+
+sort(table(dat$neighborhood), decreasing= TRUE)
+
+```
+
+<br>
+
+## Question 6: Neighborhoods & Vacant Lots
+
+**Question:** *Which neighborhood contains the most vacant lots?*
+
+**Answer:** **Near Westside** contains the most vacant lots.
+
+<br>
+
+```{r}
+
+tab <- table(dat$neighborhood, dat$land_use)
+sort(tab[,"Vacant Land"], decreasing=TRUE)
+
+```
+
+<br>
+<br>
+
