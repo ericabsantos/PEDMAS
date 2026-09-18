@@ -1,0 +1,209 @@
+---
+output:
+  html_document:
+    theme: readable
+    df_print: kable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# do not change this chunk
+knitr::opts_chunk$set(echo=T, eval=T, fig.width=6, fig.height=4, warning=F, message=F )
+```
+
+# Final Exam - PAF 510
+### 2026 Summer A
+### Watts College of Public Service & Community Solutions, Arizona State University
+
+Erica Santos
+
+## Instructions
+
+Type your responses below to each question in the Exam Instructions HTML. When finished, knit to HTML and submit in Canvas.
+
+## Questions
+
+### Q1 (35 points)
+
+**Training**
+
+β = 295.816
+
+SE = 69.207
+
+p = 0.000023
+
+Holding all other variables constant, individuals who participated in the MWSI job training program earned $295.82 more per month, on average, than those who didn't participate. This coefficient is statistically significant at the 5% level (p<0.05).
+
+**Age**
+
+β = 1.068
+
+SE = 2.923
+
+p = 0.7149
+
+Holding all other variables constant, each additional year of age is associated with a $1.07 increase in monthly income, on average. This coefficient is not statically significant at the 5% level (p=0.7149 > 0.05), therefore the null hypothesis that age has no effect on monthly income cannot be rejected. 
+
+**Education**
+
+β = 137.576 
+
+SE = 9.122
+
+p < 0.0001
+
+Holding all other variables constant, each additional year of formal education is associated with a $137.58 increase in monthly income, on average. This coefficient is statistically significant at the 5% level (p<0.05).
+
+
+**Prior Experience** 
+
+β = 48.791
+
+SE = 3.858
+
+p<0.0001
+
+Holding all other variables constant, each additional year or prior experience is associated with $48.79 more in monthly income, on average. This coefficient is statistically significant at the 5% level (p<0.05). 
+
+**Urban** 
+
+β = 192.856
+
+SE = 75.328
+
+p = 0.0108
+
+Holding all other variables constant, individuals living in urban areas earned an average of $192.86 more per month than those living in rural areas. This coefficient is statically significant at the 5% level (p<0.05). 
+
+**Public Transit** 
+
+β = 40.700
+
+SE = 74.709
+
+p = 0.58961
+
+Holding all other variables constant, individuals with access to public transportation on average earned $40.70 more per month, than those without access.  This coefficient is not statistically significant at the 5% level (p = 0.586 > 0.05), meaning we cannot reject the null hypothesis that public transit access has no effect on monthly income. 
+
+**Dependents**
+
+β = -69.679
+
+SE = 29.782
+
+p = 0.0197
+
+Holding all other variables constant, each additional dependent in the household is associated with $69.68 less in monthly income, on average. This coefficient is statistically significant at the 5% level (p<0.05)
+
+
+### Q2 (5 points)
+
+The coefficient of training is $295.82 per month is the estimated difference in monthly income between participants and non-participants, after controlling for age, education, prior experience, urban status, transit access and dependents. This is the portion of the income difference that the regression attributes specifically to training participation. 
+
+It is statistically significant (p<0.001), and therefore this result is very unlikely to be caused solely by sampling noise.
+
+In order to evaluate practical significance, the coefficient will need to be bench marked against something meaningful. The increase of $295.82 per month translates to approximately $3,550 per year in additional income, which is not a small sum for someone recently unemployed and reentering the workforce. The effect of training represents a meaningful share of income for lower-wage workers.If the average monthly income in the sample is approximately $3,000-$4,000, which is plausible given the intercept of ~$2,124 along with the additional variables, the training will account for roughly 7-10% of the monthly income, which is economically meaningful. For the target population, even a moderate boost in income could have compounding long-term effects if it assists in them being able to be established in a new sector. There are also reasons to be cautious of the effects of training, such as a short term is being observed and it is unknown if the premium stays, grows or decreases over time, as well as the participation being voluntary and first come first served. This likely has some vary of selection bias, notably towards those that are more motivated or organized having either sought out or selected the program. 
+
+
+### Q3 (10 points)
+
+$\hat{y}$ = 2124.306 (Intercept) + 295.816 (training) +1.068 (Age) + 137.576 (education) + 48.791 (prior experience) + 192.856 (urban) +  40.700 (public Transit) - 69.679 (dependents)
+
+
+**a.)**
+
+$\hat{y}$ = 2124.306 (1) + 295.816 (1) +1.068 (40) + 137.576 (12) + 48.791 (20) + 192.856 (1) +  40.700 (0) - 69.679 (3)
+
+**$\hat{y}$ = $5,073.39 per month**
+
+
+**b.)** 
+
+$\hat{y}$ = 2124.306 (1) + 295.816 (0) +1.068 (40) + 137.576 (12) + 48.791 (20) + 192.856 (1) +  40.700 (0) - 69.679 (3)
+
+**$\hat{y}$ = $4,777.57 per month**
+
+The difference of participant a versus b is the regression's estimate of the ceteris paribus effect of training, or the income premium associated with program participation holding everything else about the person constant. The training doesn't interact with any other variable and will be constant for all participants in the model. 
+
+
+### Q4 (5 points)
+
+No, this claim is incorrect as it is an overstatement in several different ways. It conflates what the coefficient technically means in the model with what it actually tells us about the what programs real world impacts are. 
+
+The $295.82 is the average estimated difference in monthly income between participants and non-participants, after controlling for the observed variables. The Ordinary Least Squares, or OLS, is able to estimate a single average effect across the entire sample, not that every participant earned exactly $295.82 more per month. It's possible that some earned more than the $295.82 and some may have earned less or had no gain in income at all. The residual standard error of $766.60 is more than double the size of the training coefficient, leading us to believe there is an enormous variation of the individual around any predict value. 
+
+While the $295.82 is a useful descriptive estimate of the average income gap between participants and non-participants in this sample, it is not a reliable, individual based casual claim. Overall, it should be said that the program is 'associated with' higher income on average, not that it is a guaranteed increase in wages for all that participate in training. 
+
+
+### Q5 (5 points)
+
+The Adjusted R² of 0.4444 means that the seven variables in the model explain 44.4% of the variation in monthly income across the 500 individuals that participated in the sample. The remaining 55.6% of the variation in monthly income is left unexplained by the model and resides in the residual term. Meaning that even though knowing everything the model has about a person, the majority of what makes up an individuals income and makes it different from another individual is left unaccounted for. 
+
+The adjusted R² isn't higher because of missing variables, such as local labor market conditions, working part time versus full time, and the industry or occupation. Unobserved individual traits, such as soft skills, social networks, and motivation are points to attribute to higher wages, but cannot be measured.  Age and public transit are statistically insignificant and contribute nearly nothing to explanatory power. The inherent randomness that cannot be accounted for, such as the job offer received, cost of living raises and/or merit increases, that no model would be able to account for. 
+
+
+### Q6 (5 points)
+
+Adding a Training x Urban interaction tests whether the effect of training on monthly income differs between urban and rural participants, or:
+
+H₀:The effect of training on income is the same regardless of whether someone lives in an urban or rural area. 
+
+H₁: The effect of training on income differs between urban and rural residents. 
+
+A significant positive effect would suggest that the training program produces a larger income boost for urban participants than rural ones. This could also be associated with denser job markets in urban areas, where more employers are actively hiring in higher paying institutions, such as healthcare, manufacturing, and IT, meaning that the training that was received can be translated more readily into job offers with higher wages. Better employer-program alignment may also be a reason for an increase in wage as the curriculum can be developed with local employers that would likely be concentrated in urban areas. Rural barriers such as transportation access and a smaller job pool, that even with the training given, there is a cap at their earning potential regardless of additional skills gained. 
+
+### Q7 (10 points)
+
+a. Omitted Variable Bias, or OVB, can be affecting the study because with motivation alone, both  conditions of OVB are met, it must effect the outcome which is considered monthly income and it must be correlated with the treatment variable which would be the participation in training. Since more motivated individuals are likely to earn higher incomes as well as proactively sign up for the voluntary, first come first serve training program, both conditions are met, making OVB a true concern. 
+
+b. This bias occurs because motivation is unobserved, the regression cannot separate its effect on income from the training effect. When a motivated person earns a high income, the model has no motivation variable to attribute that to, so it incorrectly associates some of that earnings premium to the participation in training. The training coefficient is ultimately absorbing the effect of motivation because the two are correlated and motivation has no where else to go in the model. 
+
+c. The bias that is seen almost certainly runs upward, therefore the training coefficient is an overestimate of the true casual effect. When both relationships are positive, the omitted variable pushes the coefficient away from zero, therefore inflating it. The true casual effect of training is likely less than the stated upper bound of $295.82, since some portion of the premium belongs to motivation, and not the program alone. 
+
+d. The gold standard of resolution would be through random assignment. If eligible individuals were randomly assigned to treatment and control groups and  motivation would be equally distributed across both groups on average, eliminating motivations ability to confound the training effect. 
+
+### Q8 (10 points)
+
+a. Bias could be very much affecting this study, since the treatment and control groups are differing systemically in ways that ultimately effect the outcome. Since this the training was offered by voluntary participation, allowing individuals to choose whether to enroll, means the group is self selected rather than randomly assigned. The first come first served enrollment also creates selection bias by having those who signed up fastest get accepted. These individuals could have had inherent characteristics of being the most motivated, organized, aware of resources and urgency. These design features mean that participants and non-participants were likely fundamentally different types of people prior to the start of the training program, making it difficult to isolate the program's true effect. 
+
+b. Bias is occurring because the core issue with the program is the decision to participate in training is not random, it is driven by individual characteristics that also independently affect individual income, such as motivation, a first come first served design for those that are more organized, more informed and are proactive in their job search. The target population is also a characteristic that isn't appropriately accounted for, as these were participants that were from declining industries that had been unemployed for at least three months. The baseline may have been different within this group between participants and non participants based on timing of their lay off and how up to date their skills may have been.
+
+c. The bias nearly positively runs upward, meaning the training effect has been overestimated. This is based on factors of each individual that was allowed to participate, such as those who self selected would likely be more motivated, organized and job ready. These traits alone will produce a higher income. 
+
+d. Random assignment would be the cleanest solution to correct bias in this trial in the future. If the eligible individuals were assigned to training and control groups at random, the issue with selection disappears by design since participation would no longer be driven by the characteristics of the individual. 
+
+### Q9 (5 points)
+
+The "current_occupation" variable should not be added as a control variable to the regression, as this would likely make the regression worse. Occupation sits as a mediator on the pathway between training and income, rather than being a background characteristic that effects both. Controlling for this will introduce a new bias by blocking the mechanism that the program works through. This would force the model to underestimate the true effect of the training. 
+
+
+### Q10 (10 points)
+
+**What the study found**
+
+The MWSI study found that participants in a 12 week job training program in manufacturing, healthcare and IT earned approximately $295.82 more per month than comparable non-participants six months after re-entering the workforce. The effect was statistically significant and ultimately translates to $3,550 in additional annual earnings, which is a meaningful result for workers transitioning out of declining industries. However, as discussed below, there are good reasons to treat this estimate cautiously before using it to justify a new stat program.
+
+**Internal Validity Concerns**
+
+Standard internal validity asks: "did the program actually cause the income gains observed in Michigan?" This is where the study's design creates serious doubt. 
+
+Since participation was voluntary and training was administered on a first come first served basis, individuals who were able to enroll would have been more likely to be more motivated and more organized than those that didn't. These traits alone will produce an increase in income. Therefore, the estimated $295.82 is probably an overestimate of the programs true casual effects. The study also only measures outcomes for six months post gainful employment, therefore we don't know if these increases persist, decline, increase or are removed in total. Overall, while the results seen in Michigan are encouraging, they are not definitive that the program is effective in increasing the average income. 
+
+**External Validity Concerns**
+
+External Validity asks: "would these results be able to be replicated in Arizona" Here, significant caution is warranted, as Arizona is a significantly different population than Michigan. 
+
+The MWSI was initially designed for Michigan's Industrial Midwest context, targeting workers that had been displaced by automation and global competition in manufacturing heavy regions. Arizona's economy looks significantly different with higher concentrations in construction, real estate, tourism, and technology. The curriculum developed for Michigan employers would likely not match any of Arizona's actual job openings. 
+
+Michigan's program also operated across six counties that consisted of a variety of urban and rural communities. Arizona's counties differ greatly with a large rural desert interior, the major urban areas of Phoenix and Tucson, and a large population of English as a Second Language workers. These differences would likely change the program deliveries and outcomes significantly. 
+
+Arizona's construction and tourism sectors are highly seasonal, effecting whether training translates into highly stable, year round employment the same way it did in Michigan. 
+
+Overall, the findings of Michigan's program can be considered a reasonable starting point, but it can be assumed that they will not directly transfer to Arizona's economy. 
+
+**Specific Recommendation**
+
+If Arizona were to consider running a similar program, the largest and most significant change that would need to be considered is changing the way that sign ups are received. By removing the first come first served system and implementing a lottery system among all qualified applicants, the bias of motivation and organization is immediately removed. 
+
+From a practicality standpoint, this is important since it is likely that applications will exceed the available slots, by randomly selecting participants from the qualified applicant pool, this will create a natural control group of equally motivated individuals who applied but weren't selected. The change in design adds nothing to the cost of the program and would allow the state to generate rigorous casual evidence about whether the program actually works for this specific context, rather than implementing Michigan selection bias problem. After one or possibly two of the program cycles with lottery based enrollment, Arizona would have its own high quality data to direct future investment decisions, which is far more valuable than extrapolating from another state's flawed estimates.  

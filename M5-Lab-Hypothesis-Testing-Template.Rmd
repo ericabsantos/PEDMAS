@@ -1,0 +1,272 @@
+---
+output:
+  html_document:
+    theme: readable
+    df_print: kable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# do not change this chunk
+knitr::opts_chunk$set(echo=T, eval=T, fig.width=6, fig.height=4, warning=F, message=F )
+```
+
+
+# M5 Lab 5 Submission
+Erica Santos
+
+
+# Overview
+This is the same simulation as last session, where we focused on generating and interpreting distributions of estimated effects that came from many different samples of a population. In this Lab, we examine more closely how these sampling distributions can be used to determine if your results are "statistically significant", and more generally test hypotheses about the "rules of the world" that generated the data you have. 
+<!--In particular, if the estimate can actually be different each time, we want to be sure that it was not just due to chance. The key to doing so is understanding how likely it would be to observe a value as big or bigger than the estimate we calculated from our single run of the world, if in reality the treatment had no effect at all. -->
+
+
+# Simulator
+
+The link below will open a new webpage containing the simulator.  
+
+<a href="https://watts-college.github.io/paf-502-primary/NetLogo_Web_sampling-dist.html" target="_blank">Click here to access simulator</a> 
+
+# How it Works
+As a reminder, the simulation is comprised of a group of students who have two characteristics, achievement level and a socioeconomic status; and a program (the treatment) intended to improve their performance. Both achievement and SES are normally distributed across the population of students, but the exact values are randomly chosen each time you press the `setup` button (so it is as if you are picking a new set of people from the same population).
+
+If a student participates in the treatment, then their achievement will increase by an amount given by the treatment-effect slider plus or minus a little bit of random error.  If the student does not participate, for now we will assume that their achievement remains entirely unchanged.
+
+How students are divided into treatment and comparison groups depends on the `treatment-assignment` slider.  If random assignment is specified, then the treatment group is entirely chosen at random.  If self-selection is specified, then whether a student is in the treatment group or not depends on their socioeconomic status (SES) – the higher their SES, the more likely it is that they will be in the treatment group. 
+ 
+
+### Parameters You Can Change
+
+ **Model Parameter** | **Description    **                                   
+--------------| -------------------
+nbr-people (slider) |the total number of students in your target population                      
+treatment-effect (slider) |the amount that the treatment increases achievement; it’s the actual effect (in real life you don’t know this – you only see the estimated effect)
+treatment-assignment (drop down box) |lets you specify whether people can self-select into the treatment group, or if the treatment group is randomly assigned
+achievement-ses-correlation (slider) |the association between the initial achievement of students (at time zero) and their socioeconomic status
+treatment-ses-correlation (slider) |the association between the propensity of students to select themselves into the treatment group and their socioeconomic status (only matters when “self-selection” is chosen in the treatment-assignment drop down box)
+
+
+In order for your changes to take effect, be sure to press setup after making all your changes.
+
+
+### Running One Trial
+1.	Set your parameters
+2.	Press `setup` button
+3.	Press `treat` button
+
+### Running Multiple Trials in a Batch
+1.	Set your parameters
+2.	Set the `N` slider to the number of trials you want to run
+3.	Press the `repeat-N-times` button
+
+
+# Questions
+## Q1
+Set the settings of your simulation to the following:
+`nbr-people = 150`  
+`treatment-effect = 0`  
+`treatment-assignment = “random”`  
+`achievement-ses-correlation = 0.5`  
+`treatment-ses-correlation = 0.5` 
+
+You can think of these settings as the "rules" that govern what is true about the worlds you a running. Let's be clear about what those rules are saying: 
+
+1. You are running a world where it doesn't matter for a student's performance if they received the treatment or not -- **there is no treatment effect**. In other words, the **null hypothesis is true** for the the worlds you run under these settings. In the real world, you would have no idea if this is true or not. That is why you are collecting data.
+
+2. If students were allowed to self-select into the treatment, higher ses students would be more likely to receive the treatment. However, you are running a world where there is no relationship between ses and receiving the treatment. That is because the `treatment-assignment` was set to `random`. In the real world, you knew that the data came from a well-executed randomized controlled experiment. If your data were not from an experiment, you would have to think hard about the real world "assignment rule." You would probably be worried that the higher students self-selected into treatment.
+
+3. You know that higher ses students tend to have higher achievement. The correlation is not 1.0 so it is not a hard and fast rule, but that is the general relationship. This knowledge could help you explain the achievement levels of all students (treated and untreated) but it would not help explain any *difference* you saw between the two groups. That is because you know the treatment was randomly assigned.
+
+4. The final rule is not about the underlying world you are running but instead about your sampling procedure: You know that you each time you run the world you are sampling 150 students. In the real world, data from that one sample of 150 students is usually the only data you would ever see.  
+
+Press `setup` then `treat` to remind yourself of the type of results you get on each run, especially the estimated treatment effect. Notice that below the estimated effect there is a yellow monitor that says `t-stat`. It should say N/A right now because we do not yet have enough information to be able to calculate it. More on that below. 
+
+### Q1.1
+Run a batch of 300 trials with the setting above. It might take a minute or so to run. If you browser asks you if you want to wait or stop, just wait. When the 300 trials are complete, examine the distribution of the Frequency of Effects Across N Trials plot. Remember, this plot represents the frequency of the means of each of the 300 runs of the world you just executed -- it's the sampling distribution the comes from running the world 300 times with the rules above.
+
+What is the mean and standard deviation of the sampling distribution? How big and positive does the estimated effect have to be before you can say there is less than a 2.5% chance an effect at least that positive occurred under these settings? How big and negative does the estimated effect have to be before you can say there is less than a 2.5% chance that an effect at least that negative it would occur under these settings?
+
+Mean 0.05
+Standard Deviation 1.66
+Since the true treatment effect was set to 0 and the treatment assignment is set to
+random, the sampling distribution is centered very close to zero, as to be expected, and typically vary about 1.66 points between each sampling. 
+
+2.5% of the effects are less than -3.4
+
+2.5% of the effects are greater than 3.1
+
+This means that an estimated effect must be greater than 3.1 before it can be determined that there is less than a 2.5% chance of observing an effect that large and poisitive under the current settings. 
+
+On the otherside, an estimated effect must be less than -3.4 before it can be said that there is less than a 2.5% chance of observing an effect that large and negative under these settings. 
+
+Overall, these values form the approximate boundaries of the middle 95% of the sampling distribution. If the estimated effect falls outside teh range of -3.4 to 3.1, it would be considered unusual under the simluation settings because it occuyrs less than 5% of the time between both tails. As the observed estimated effect is 0.476, this is well within the range and is not statistically unusual. 
+
+
+### Q1.2
+Suppose you went out to the real world and collected data on a sample of 150 students, where almost half of the students were randomly assigned to receive the treatment. You observe a difference of **2.4 points** between the mean achievement of the two groups. 
+
+
+#### Q1.2.1 
+What is the approximate probability that you would see an effect 2.4 points or larger if the real world operated according to the same settings used in the simulation? (You can't get the exact value from the simulation, but you can eyeball it from Frequency of Effects Across N Trials histogram.) 
+
+z=(2.4-0.05)/1.66 ≈ 1.42
+
+In a roughly bell shaped distribution, a value 1.42 standard deviations above the mean leaves about 7-8% of the distribution in the upper tail. 
+
+When considering the histogram, the approximate probability of observing an effect of 2.4 points or larger under these simulation settings is about 8% or 0.08 probability. 
+
+This observation determines that if the real world were to operate according to the same settings as the simulation, it would be expected to see an estimated effect of 2.4 or greater about 8 times out of 100 run experiments. 
+
+
+#### Q1.2.2 
+Use the p-value approach to test the hypothesis that a value of 2.4 points is statistically significant from zero at the 5% significance level. 
+
+Null Hypothesis (H₀) – The true treatment effect is 0 points.
+
+Alternative Hypothesis (H 1 ) – The true treatment effect is not 0 points.
+
+P Value Determination:
+From the sampling distribution, the probability of observing an effect of 2.4 points or greater under the null hypothesis is approximately 0.08, or 8%. 
+
+Thus: 
+p ≈ 0.08
+
+Comparing the p-value to the significance level: 
+
+p = 0.08 > 0.05
+
+Since the p value is greater than 0.05, we fail to reject the null hypothesis. 
+
+An estimated effect of 2.4 points is not statistically significant at the 5% level. There is an approximately 8% chance that the effect will be observed will be this large or larger due to random variation alone when the true effect is zero, which is greater than the 5% threshold for statistical significance. Therefore, there is insufficient evidence to conclude that the effect is different from zero. 
+
+
+
+## Q2
+You can convert any estimated effect into something called a “t-statistic.” All that means is that you calculate its difference from some comparison value and divide it by its standard error:
+
+t-statistic = (estimate – comparison value) / standard error of estimate
+
+Note that when you use a comparison value of 0 -- like you would do if you wanted to compare the value you observed to what you would get if the null hypothesis were true -- the t-statistic just ends up being the ratio of the effect value to its standard error. As a reminder, the standard error of an estimate is essentially the standard deviation of its sampling distribution -- i.e., the standard deviation of the distribution you see the Frequency of Effects Across N Trials histogram in the simulation.
+
+Notice also that the last run visible in your simulation -- the one that you see after your pressed the `repeat-N-times` button to get 300 samples -- displays the t-statistic of that last run. It displayed N/A before because the simulation program had no idea what to use for the standard error of the estimate. Now that you drew 300 different samples, it can use the standard deviation of the sampling distribution (the value in the yellow Std Deviation of the Effects box) as an estimate of the standard error in the t-statistic calculation.
+
+### Q2.1
+Assume again that you went out to the real world and collected data on a sample of 150 students, where almost half of the students were randomly assigned to received the treatment. You observe a difference of **2.4 points** between the mean achievement of the two groups. Calculate the t-statistic comparing this 2.4 point difference to a difference of 0 (null hypothesis). Use the standard deviation of the sample means from the 300 samples of the simulation as an estimate for the standard error. (You wrote this value down in Q1.1)  
+
+Observed Effect =2.4
+Null Hypothesis Effect =0
+Standard Error ≈1.66
+
+t= (2.4-0)/1.66 = 1.45
+
+A t-statistic of 1.45 means that the observed difference of 2.4 points is about 1.45 standard errors above zero. This is not large enough to be statistically significant at the 5% level.
+
+
+### Q2.2
+Pressing the `plot-tstats` button will convert the effects of all 300 runs in the simulation to t-statistics using a comparison value of 0 and the value in the yellow Std Devaiation of the Effects box as the standard error of the estimate. Press the `plot-tstats` button to see the t-distribution. If at anytime you want to see the original distribution again, you can press `plot-original`. 
+
+Keep in mind that when you are running the model 300 times, what you are doing is equivalent to taking 300 samples, each of which is 150 people large. You can therefore think of the plotted t-distribution as representing the values of the t-statistic calculated for each of those 150 student samples. 
+
+What is the mean and standard deviation of the t-statistic sampling distribution? How big and positive does the estimated effect have to be before you can say that there is less than a 2.5% chance that it would occur under these settings? How big and negative does the estimated effect have to be before you can say that there less than a 2.5% chance that it would occur under these settings?
+
+Mean t-statistic: 0
+
+Standard deviation of the t-statistic sampling distribution 
+
+Standard deviation ≈1
+
+The upper 2.5% effect cutoff is 1.87
+
+An estimated effect must be greater than 1.87 points, before it can be said that there is less than a 2.5% chance of observing such a positive result under these settings. 
+
+The lower 2.5% cutoff is -2.06
+
+An estimated effect must be less than -2.06 before it can be said that there is less than a 2.5% chance of observing such a negative result under these settings. 
+
+Fail to reject the null hypothesis. The 2.4 point difference is not statistically significant at the 5% level. 
+
+### Q2.3
+What is the approximate probability that you would see a t-statistic larger than the t-statistic you calculated in Q2.1 if the real world operated according to the same settings used in the simulation? (You can't get the exact value from the simulation, but you can eyeball it from Frequency of Effects Across N Trials histogram that is visible after pressing the `plot-tstats' button.) 
+
+The t-statistic calculated is 1.44. Looking at the t-distribution histogram, the upper 2.5% cutoff is 1.87 and 1.44 falls below that threshold, since it sits within the bulk of the distribution. Eyeballing the histogram, roughly p ≈ 0.08 or 8% of trials produced a t-statistic this large or larger in the upper tail. 
+
+### Q2.4
+Use the p-value approach to test the hypothesis that your t-statistic value is statistically significant from zero at the 5% significance level. 
+
+H₀: The true effect = 0 
+
+H₁: The true effect ≠ 0
+
+This is a two-tailed test.
+
+Since the probability of observing a t-statistic of 1.44 or larger in on tail is 0.08, the two-tailed p-value is: 
+
+p ≈ 2(0.08) = 0.16
+
+Therefore:fail to reject the null hypothesis
+
+The t-statistic of 1.44 falls within the range of values that occur commonly by chance under the null distribution, between the upper and lower cutoffs and therefore provides insufficient evidence to conclude the treatment effect is statistically different from zero at the 5% significance level.  
+
+## Q3
+Change the `nbr-people` slider to 500. Change nothing else. Run a batch of 300 trials and examine the distribution of the Frequency of Effects Across N Trials plot. It might take a little while to run so give it a minute to complete.
+
+
+### Q3.1
+What is the mean and standard deviation of the sampling distribution? How big and positive does the estimated effect have to be before you can say there is less than a 2.5% chance that it would occur under these settings? How big and negative does the estimated effect have to be before you can say there less than a 2.5% chance that it would occur under these settings?
+
+Mean of Sampling Distribution: -0.02
+
+Standard Deviation: 0.92
+
+Lower 2.5% cutoff -1.93
+
+Only 2.5% of effects are more negative than -1.93. The estimated effect must be less than -1.93 to be considered unusually large and negative. 
+
+Upper 2.5% cutoff 1.80
+
+Only 2.5% of effects are more positive than 1.80. The estimated effect must be greater than 1.80 to be considered unusually large and positive. 
+
+Observed estimate was: 
+
+t-stat =-2.04
+
+effect ≈ -1.873
+
+That lies below the -1.93 cutoff for effects.
+
+With a larger sample size of 500, the standard deviation of the sampling distribution narrowed considerably from 1.66 to 0.92 in comparison to Q1.1 reflecting that thte larger the sample size the more precise the estimates. 
+
+### Q3.2
+Just like in the previous questions, suppose you went out to the real world and collected data, where almost half of the students were randomly assigned to receive the treatment. The only thing you did differently this time was collect a sample of 500 students instead of 150. Futher assume that you observed a difference of **2.4 points** between the mean achievement of the two groups, just like you did before. 
+
+Calculate the t-statistic we can use to compare this 2.4 point difference to a difference of 0 (null hypothesis). Use the standard deviation of the sample means from the 300 samples of size 500 students generated by the simulation as an estimate for the standard error. Compare this to the t-statistic you had calculated in Q2.1 when your the 300 samples were each 150 students in size.
+
+t=(2.4-0)/0.92 ≈ 2.61
+
+Comparing this t-statistic from question 2, where n=150 which was 1.45. Increasing the sample size from 150 to 500 students redueces the standard error from ~ 1.66 to 0.92 and increases the t-statistic from 1.45 to 2.61.
+
+Having a larger sample, the same observed effect of 2.4 points becomes much more statistically strong, as the estimate becomes more precise. 
+
+
+### Q3.3
+Press the `plot-tstats' button to view the t-distribution associated with your 500 samples. Use the p-value approach to test the hypothesis that t-statistic you calculated in Q3.2 is statistically significant from zero at the 5% significance level. 
+
+H₀: the true treatment effect is 0. 
+H₁: the true treatment effect is not 0 (two-tailed test).
+
+Observed t-statistic t= 2.61
+
+Mean ≈ 0 
+
+SD ≈ 1
+
+2.5% cutoffs: 
+  Lower: -2.10
+  Upper: 1.95
+  
+  
+Since 2.61 exceeds the upper cutoff of 1.95, it falls in the rejection region. The one-tailed probability of observing a t-statistic this large is approximately 0.01, giving a two-tailed p-value of 
+
+p ≈ 2 x 0.01 = 0.02
+
+Since 0.02 < 0.05, we reject the null hypothesis. The observed 2.4 point difference is statistically significany at the 5% level when using a sample of 500 students. This contrasts with Q2.4 where the same 2.4 point effect was not significant with only 150 students participating. This demonstrats how increasing sample size increases statisical power by reducing the standard error and producing a larger t-statistic. 

@@ -1,0 +1,265 @@
+---
+output:
+  html_document:
+    theme: readable
+    df_print: kable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# do not change this chunk
+knitr::opts_chunk$set(echo=T, eval=T, fig.width=6, fig.height=4, warning=F, message=F )
+```
+
+
+# M3 Lab 3 Submission
+Erica Santos
+
+# Overview
+This activity uses the simulation as before, where the treatment is an educational intervention designed to improve the achievement of a group of students. A key difference this time is that, after experimenting with the simulation a bit more, you will export the data from a single run of the simulation to R to estimate the treatment effect using linear regression. You will see how linear regression can be used to estimate the same treatment effect you calculated by straightforward subtraction when comparing the means of the treated and non-treated groups, as well as a treatment effect that adjusts for self-selection. 
+
+# Simulator
+
+The link below will open a new webpage containing the simulator.  
+
+<a href="https://watts-college.github.io/paf-502-primary/rand-exp.html" target="_blank">Click here to access simulator</a> 
+
+
+# How it Works
+The simulation is comprised of a group of students who have two characteristics, achievement level and a socioeconomic status; and a program (the treatment) intended to improve their performance. The achievement of the student is represented by their color.  A darker blue represents a higher level of achievement.  The SES of the student is represented by their size.  A larger size represents a higher level of SES.  Both achievement and SES are normally distributed across the population of students, but the exact values are randomly chosen each time you press the `setup`button.
+
+If a student participates in the treatment, then their achievement will increase by an amount given by the treatment-effect slider plus or minus a little bit of random error.  If the student does not participate, for now we will assume that their achievement remains entirely unchanged.
+
+How students are divided into treatment and comparison groups depends on the `treatment-assignment` slider.  If random assignment is specified, then the treatment group is entirely chosen at random.  If self-selection is specified, then whether a student is in the treatment group or not depends on their socioeconomic status (SES) – the higher their SES, the more likely it is that they will be in the treatment group. 
+
+### Parameters You Can Change
+
+ **Model Parameter** | **Description    **                                   
+--------------| -------------------
+nbr-people (slider) |the total number of students in your target population                      
+treatment-effect (slider) |the amount that the treatment increases achievement; it’s the actual effect (in real life you don’t know this – you only see the estimated effect)
+treatment-assignment (drop down box) |lets you specify whether people can self-select into the treatment group, or if the treatment group is randomly assigned
+achievement-ses-correlation (slider) |the association between the initial achievement of students (at time zero) and their socioeconomic status
+treatment-ses-correlation (slider) |the association between the propensity of students to select themselves into the treatment group and their socioeconomic status (only matters when “self-selection” is chosen in the treatment-assignment drop down box)
+
+
+In order for your changes to take effect, be sure to press setup after making all your changes.
+
+
+### Running One Trial
+1.	Set your parameters
+2.	Press `setup` button
+3.	Press `treat` button
+
+### Running Multiple Trials in a Batch
+1.	Set your parameters
+2.	Set the `N` slider to the number of trials you want to run
+3.	Press the `repeat-N-times` button
+
+
+# Questions
+## Q1
+
+To remind yourself how the simulation worked, run a few trials starting with the settings below. Then try different combinations of values for `achievement-ses-correlation` and `treatment-ses-correlation` and observe what happens to the estimated effect  when one is high and the other low; both are high; and both low (in comparison to the actual effect you set on using the `achievement-ses-correlation` slider).   
+  
+`nbr-people = 200`  
+`treatment-effect = 15`  
+`treatment-assignment = “self-selection”`  
+`achievement-ses-correlation = 0.7`  
+`treatment-ses-correlation = 0.6`  
+
+### Q1.1
+How does the the estimated treatment effect (e.g., the value in the `estimated-effect` monitor) compare the actual effect (e.g., 15, which you set using the `treatment-effect` slider) when both `achievement-ses-correlation` and `treatment-ses-correlation` are both high? Both low? Which settting -- both high or both low -- results in more bias. Why? 
+
+When achievement-SES correlation and treatment-SES correlation are both high, the estimated treatment effect regularly greatly differs from the actual treatment effect, occurring due to strong influences of SES towards achievement relating to who receives treatment. As a result, some of the effect of SES is incorrectly attributed to treatment received and therefore creates confounding bias. 
+
+When both correlations are low, the estimated treatment effect is generally observed closer to the actual effect. Since SES is given a weak relationship with both achievement and treatment, it contributes little distortion to the estimate. 
+
+More bias is seen when both correlations are high. When both correlations are high, SES satisfies both conditions strongly. The model is unable to separate the effect of treatment from the effect of SES, so the estimated treatment effect is distorted. When the correlations are low, SES is only weakly connected to achievement and treatment assignment , so there is significantly less confounding and the estimate remains closer to the true treatment effect. 
+
+
+### Q1.2
+Redo your favorite trials in Question 1.1 with `treatment-assignment = “random”`.  What happens to the estimated effect? Why?
+
+When the treatment-assignment is set to random, the estimated treatment effect generally becomes much closer to the actual treatment effect, regardless of whether the achievement-SES correlation or the treatment-SES correlation is high or low. 
+
+The change that occurs with the change to random treatment assignment is that the estimated effect becomes significantly more accurate, there are minor fluctuations between trials due to this random sampling variation, but overall it maintains a center on the true treatment effect. The extreme overestimates and underestimates that were seen in the self- selection runs mostly disappear. 
+
+The random assignment breaks the relationship between SES and treatment status, meaning that those that have high SES are equally likely to receive treatment. Since the treatment opportunity is no longer associated with SES, SES can still have an effect on achievement, but will not influence who receives the treatment. This change allows the treatment group and the control group to be similar in their SES composition on average. 
+
+
+
+## Q2
+So far we have had the luxury of being able to experiment with many different “worlds,” where both the achievement-ses-correlation and the treatment-ses-correlation are entirely in our control. This has allowed us to investigate how different assumptions about those associations impact the estimate the effects of a treatment when we simply compare the mean of the groups who received it to those who did not. In reality, however, the achievement-ses-correlation is something we cannot change; if we are lucky, the best we can do is break the treatment-ses-correlation by conducting a social experiment. Moreover, it is highly unlikely that we will be able to run many repetitions of the same experiment. For this question we will limit ourselves to one “world” where we get to investigate the outcomes of students under experimental and non-experimental conditions.
+
+Set the parameters of the model to the following:  
+`nbr-people = 500`  
+`treatment-effect = 15`  
+`treatment-assignment = “self-selection”`  
+`achievement-ses-correlation = 0.7`  
+`treatment-ses-correlation = 0.6`  
+
+Run this simulated world one time by pressing the `setup` button once, and then pressing the “treat” button once. Make a note of the estimated effect for this run of the world and keep this screen open on your computer. You may need to come back to it for reference. 
+
+The next step is to press the `export-data` button one time.  Depending on what browser you are using, that will either download file called "student-data.csv" directly to your downloads directory, or prompt you to save it. Either way, make sure you place that file in your R Studio current working directory and  ***rename the file "M3-student-data.csv"***.
+
+The file has 500 rows of data, with each row containing the following information about a single student in the simulation: 
+
+ **Variable**        | **Description    **                                   
+-------------------- | -----------------------------------
+currach | student’s current achievement after hitting the treat button
+initach | student’s initial achievement before hitting the treat button
+ses | student’s socioeconomic status                      
+treat | a dummy variable indicated whether or not the student received the treatment
+
+Go look at that file to understand its structure. Note that each variable/column of data is seperated by a comma (hence the "comma seperated values (csv)" extension on the file). You can then import the csv file into R and take a look at the data using the code below: 
+
+```{r}
+#load these libraries first, if you haven't already
+library(tidyverse)
+library(stargazer)
+library(ggplot2)
+library(GGally)
+
+# read in data
+studentData <- read.csv("M3-student-data.csv")
+
+# view data
+head(studentData)  
+glimpse(studentData)
+```
+
+
+Note that your output will look different here and for all the questions because you are using your own data from your own run of the simulation. The output should be somewhat similar, but it will not be the same.
+
+### Q2.1
+Look at the relationships between the achievement and ses variables using the `ggpairs` function from the GGally library. This function creates a plot that gives you three things at once: the histogram of each variable, the scatter plot between all pairs of variables, and the correlation between all pairs of variables. The command below sends all the data from `studentData` to the the `select` function; the `select` function keeps only the desired columns and sends them to the `ggpairs` function for final processing. Note that the "pipe" operator (`%>%`) simply sends the output of the function on the left to the function on the right. It is a very handy way to send data through several functions.
+
+```{r,fig.width=10, fig.height=10}
+studentData %>% select(currach,initach,ses) %>% ggpairs()
+
+```
+Do these relationships make sense given what you know about how the data were created? Why or why not?
+
+The graphs show strong positive relationships among all three variables. Current achievement (currach) and initial achievement (initach) show the strongest correlation, r=0.833, which is to be expected as students that began with higher achievement levels tend to maintain higher achievement levels overtime. Both achievement variables are also positively correlated with SES, as currach and SES have a correlation of r=0.651 and initach and SES have an r=0.680. 
+
+These results make sense since the simulation was designed to have SES influence achievement. Students from higher-SES backgrounds tend to have higher initial achievement, and since initial achievement can be used as a strong predictor of later achievement, both achievement measures are strongly related to SES. Th strong correlation between initial and current achievement is to be expected as prior achievement is one of the best predictors of future achievement. 
+
+
+### Q2.2
+Examine how the achievement distributions of the treated and control groups differ. You can do this using the `ggplot` function which allows you to create multiple "layers" of graphics to display at the same time. The first part of the command tells it what data to use and defines any "aesthetic mapppings" you want to use for all the layers that follow. For example, the first part of the command below (before the `+`) says "map the `currach` column to the x-axis for all the layers that follow." The second part of the command inherits that mapping and adds the `geom_histogram` layer, which says "use the data and mappings you inherit to create a histogram with black lines around the bars."
+
+```{r}
+ggplot(studentData,aes(x=currach)) + geom_histogram(color="black")
+```
+ 
+To plot the treated and untreated distributions at the same time, all you need to do is add an aesthetic mapping that involves a categorical variable. Common mappings include the `shape` of the things you are plotting, the `color` of the lines of the things you are plotting; and the color you use to `fill` the things your are plotting. To illustrate, the first command below maps the different levels of the factor `treat` to different `fill` colors for each histogram (keeping the color of the bar lines black). 
+
+[Note: The `as.factor()` function is used around the `treat` variable in the ggplot code so that ggplot knows to treat it as a categorical variable rather than a continous number. This is important because categorical variables are treated differently in visualizations, particularly in how they are grouped, colored, and labeled in plots.]
+
+```{r}
+ggplot(studentData,aes(x=currach, fill=as.factor(treat))) + 
+  geom_histogram(color="black") +
+  labs(fill = "treat")  # Changes the legend title 
+```
+
+Alternatively, we could have visualized the two histograms separately by mapping the different levels of the factor `treat` to a different line `color` for each histogram (and make `fill` each histogram with black). I think this makes it harder to visualize the differences between the two histograms, but decide for yourself:
+
+```{r}
+ggplot(studentData,aes(x=currach, color=as.factor(treat))) + 
+  geom_histogram(fill="black") + 
+  labs(fill = "treat")  # Changes the legend title 
+```
+
+To put exact numbers on the differences between these two distribution, we can tabulate the data by whether or not the students received the treatment. You can accomplish this by using the `group_by` function to group the data by the different levels of the `treat` factor, and then pipe that data to the `summarize` function to apply some calculation to each group. In the command below, we tell the `summarize` function to calculate the mean of `currach` for each group, and call the temporary variable it creates to store that information `meanCurrent`. The `na.rm=TRUE` option is a good one to include by default so that you can still calculate the mean if there are missing values. 
+
+```{r}
+studentData %>% select(treat, currach) %>% 
+  group_by(treat) %>% summarize(meanCurrent = mean(currach, na.rm=TRUE))
+```
+
+Use this information to calculate the treatment effect (i.e., the difference between the mean of treated students and the mean of the non-treated students). How does it compare to the Estimated Effect in the simulation calculated by taking the difference between the mean of the treated and untreated groups? How does it compare to the true treatment effect used in the simulation that produced the data?
+
+This histogram shows that the distribution of current achievement, for the treated group (treat=1) is shifted noticeably to the right compared to the untreated group (treat=0). This means that students who received the treatment generally have higher achievement scores than those that did not receive the treatment. Although there is minor overlap between the two distributions, the treated group tends to have higher overall scores, suggesting a positive treatment effect. 
+Using the group means provided:
+Mean achievement for untreated students = 47.09648
+Mean achievement for treated students = 67.45509
+The estimated treatment effect is:
+67.45509−47.09648=20.36
+
+Therefore, the estimated treatment effect is approximately 20.36 points. 
+
+This value matches the estimated effect given by the simulation as both are calculated as the difference between the mean achievement of the treated and untreated groups. The estimated effect of 20.36 is larger than the true treatment effect of 15 that was used to generate the data. This means that the treatment effect is being overestimated by about 5.36 points. The overestimation that is occurring is likely due to treatment assigment is related to other factors that also have an effect on achievement, notably SES, that is strongly correlated with achievement. If the higher-SES students were more likely to receive treatment, the some of the difference in achievement between the treatment and control groups is due to SES rather than the treatment itself. This leads to the creation of confounding bias, causing the simple comparison of group means to overstate the true treatment effect. 
+
+
+
+### Q2.3
+Run a linear regression that predicts current achievement on the basis of whether or not they received the treatment.  Look at the estimated coefficient of the treatment variable.  What it is telling you?  How does it compare to the treatment effect you just calculated by hand above? How does it compare to the actual treatment effect used in the simulation to generate this data?
+
+
+```{r}
+model1 <- lm(currach ~ treat, data=studentData)
+summary(model1)
+```
+
+The regression coefficient for treat is 20.3586. This means that on average, students who received the treatment scored about 20.36 points higher on current achievement than the students who didn’t receive treatment. 
+
+The regression equation is:
+currach=47.0965+20.3586(treat)
+
+The intercept (47.0965) represents the predicted current achievement score for students who did not receive the treatment (treat = 0).
+
+The treatment coefficient (20.3586) represents the difference in average achievement between treated and untreated students.
+
+This coefficient is identical to the treatment effect calculated by hand in Question 2.2:
+67.45509−47.09648=20.35861
+
+This occurs because with only having a binary treatment variable in the model, the regression coefficient is simply the difference between the mean outcomes of the treatment group and control group. 
+The estimated treatment effect of 20.36 points is larger than the true treatment effect of 15 points that was used to generate the data. The regression therefore overestimates the true effect by about 5.36 points. 
+
+The overestimation likely occurs because the model does not control for other factors that influence achievement, such as SES. Since SES is positively related to achievement and may also be related to treatment assignment, part of the achievement difference attributed to treatment is actually associated with differences in SES between groups. This creates confounding bias, forcing the estimated treatment effect to be larger than the true effect. 
+
+
+### Q2.4
+Run a linear regression that predicts current achievement on the basis of whether or not they received the treatment as well as the ses of the student.  How has the estimated coefficient of the treatment variable changed?  Why?
+
+
+```{r}
+model2 <- lm(currach ~ treat + ses, data=studentData)
+summary(model2)
+```
+When SES is added to the regression model, the estimated coefficient for treat decreases from 20.36 in Model 1 to 15.85 in Model 2. The coefficient for treat at 15.85 now represents the expected difference in current achievement between treated and untreated students after controlling for SES. This estimates the treatment effect for students with the same SES level. 
+
+This estimate is significantly closer to the true treatment effect of 15 that was initially used to generate the data. In Model 1, the treatment effect is overestimated because SES was omitted from that model. Since SES is positively related to achievement and is highly likely related to the treatment being assigned, some of the effect of SES is incorrectly attributed to the treatment’s success, this being an example of omitted variable bias. 
+
+By including SES in the model, it is possible to separate the effect of SES from the effect of the treatment, allowing for the estimated treatment effect to become more accurate and become closer to the true value that was assigned. 
+
+The SES coefficient (0.69068) indicated that holding treatment status constant, a one-unit increase in SES is associated with an increase of about 0.69 points in current achievement. The model fit also increases substantially, as the R² increases from 0.503 in Model 1 to 0.693 in Model 2, showing that the model explain about 69.3% of the variation in current achievement after accounting for both treatment and SES.  
+
+
+
+
+Substitute `initach` for `ses` and run the regression again. How close is the coefficient on `treat` t the actual effect? Why?
+```{r}
+
+model2 <- lm(initach ~ treat + ses, data=studentData)
+summary(model2)
+
+```
+
+The coefficient on treat is 0.82577, which is very close to the actual treatment effect of 0 on initial achievement. This makes sense since the treatment has not yet occurred when the initial achievement is measured. Since treatment cannot effect a student’s achievement before they receive it, the true effect of treatment on initial achievement should be zero.
+The estimated coefficient of 0.83 is small and not statistically significant (p=0.233) meaning there isn’t enough evidence to conclude that treated and untreated students differ in their initially achievement after controlling for SES. This small difference that appears is likely due to random variation in the sample rather than true treatment effect. 
+
+The results suggest that once SES is controlled for, both treated and unreated students have very similar levels of achievement prior to administration of treatment protocols. This is precisely what is to be expected if the model is appropriately accounting for the confounding effect of SES. 
+
+
+
+
+
+
+
+
+
+
+
+

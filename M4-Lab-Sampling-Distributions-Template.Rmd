@@ -1,0 +1,186 @@
+---
+output:
+  html_document:
+    theme: readable
+    df_print: kable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# do not change this chunk
+knitr::opts_chunk$set(echo=T, eval=T, fig.width=6, fig.height=4, warning=F, message=F )
+```
+
+
+# M4 Lab 4 Submission
+Erica Santos
+
+# Overview
+This is the same simulation as last session, where we focused on understanding the factors that impact the magnitude of potential bias in a treatment effect estimate. Bias or not, we put into the background the fact that each time we “ran the world” the results were a little bit different. This happens for two reasons. One is that each time you run the world, you analyze a different sample of students. The other reason is that even if you ran the world with the exact same students over and over, there is still a little bit of randomness associated with the performance -- factors besides just getting the treatment that make students perform a little differently each time. 
+
+In the last module we saw how bias can arise when those other factors are related to whether or not a student gets the treatment. In this session, we examine more closely what that random variability means for our estimates even if we are not worried about confounding factors. 
+<!--In particular, if the estimate can actually be different each time, we want to be sure that it was not just due to chance. The key to doing so is understanding how likely it would be to observe a value as big or bigger than the estimate we calculated from our single run of the world, if in reality the treatment had no effect at all. -->
+
+# Load R libraries
+You will also be using R Studio in this Activity. Open that now and load our usual libraries:
+```{r, echo = T, eval=T}
+library(tidyverse)
+library(GGally)
+```
+
+# Simulator
+
+The link below will open a new webpage containing the simulator.  
+
+<a href="https://watts-college.github.io/paf-502-primary/NetLogo_Web_sampling-dist.html" target="_blank">Click here to access simulator</a> 
+
+# How it Works
+As a reminder, the simulation is comprised of a group of students who have two characteristics, achievement level and a socioeconomic status; and a program (the treatment) intended to improve their performance. Both achievement and SES are normally distributed across the population of students, but the exact values are randomly chosen each time you press the `setup` button (so it is as if you are picking a new set of people from the same population).
+
+If a student participates in the treatment, then their achievement will increase by an amount given by the treatment-effect slider plus or minus a little bit of random error.  If the student does not participate, for now we will assume that their achievement remains entirely unchanged.
+
+How students are divided into treatment and comparison groups depends on the `treatment-assignment` slider.  If random assignment is specified, then the treatment group is entirely chosen at random.  If self-selection is specified, then whether a student is in the treatment group or not depends on their socioeconomic status (SES) – the higher their SES, the more likely it is that they will be in the treatment group. 
+ 
+
+### Parameters You Can Change
+
+ **Model Parameter** | **Description    **                                   
+--------------| -------------------
+nbr-people (slider) |the total number of students in your target population                      
+treatment-effect (slider) |the amount that the treatment increases achievement; it’s the actual effect (in real life you don’t know this – you only see the estimated effect)
+treatment-assignment (drop down box) |lets you specify whether people can self-select into the treatment group, or if the treatment group is randomly assigned
+achievement-ses-correlation (slider) |the association between the initial achievement of students (at time zero) and their socioeconomic status
+treatment-ses-correlation (slider) |the association between the propensity of students to select themselves into the treatment group and their socioeconomic status (only matters when “self-selection” is chosen in the treatment-assignment drop down box)
+
+
+In order for your changes to take effect, be sure to press setup after making all your changes.
+
+
+### Running One Trial
+1.	Set your parameters
+2.	Press `setup` button
+3.	Press `treat` button
+
+### Running Multiple Trials in a Batch
+1.	Set your parameters
+2.	Set the `N` slider to the number of trials you want to run
+3.	Press the `repeat-N-times` button
+
+
+# Questions
+## Q1
+Run several trials with the following settings:  
+`nbr-people = 150`  
+`treatment-effect = 8`  
+`treatment-assignment = “random”`  
+`achievement-ses-correlation = 0.7`  
+`treatment-ses-correlation = 0.6`  
+
+### Q1.1
+What is the estimated treatment effect (e.g., the value in the `estimated-effect` monitor)? How does it compare the actual effect (e.g., 8, which you set using the treatment-effect slider)? Did you expect it to be close or far from the actual effect before you ran the simulations? Why? 
+
+Write the value in the `estimated-effect` monitor from the most recent run of the simulation so we can check to see if it matches a regression estimate we will make later.
+
+Note that the estimated-effect is a little different with each trial, even when you have the exact same parameters.
+
+
+The estimated treatment effect from the initial run is 6.798, versus the actual treatment effect being 8. The estimated effect is slightly lower than the actual with a difference of 1.202 points. Prior to running the simulation, I expected the estimated effect to be reasonably close to the actual, but not exactly the same. As regression estimates are based on a sample and are subject to random variation as set up.  Since 6.798 is reasonably close to 8, the result is consistent with my initial expectations, with the difference due to expected sampling variability rather than an issue with the model. 
+
+Estimated-effect monitor value from the most recent simulation: 6.798.
+
+
+
+### Q1.2
+Get the data from your last run of the simulation, by pressing the `export-data` button. This will either automatically save a file called student-data.csv to your downloads directory, or prompt you to save the file. Put that file into your R Studio working directory for this class. It contains data on students from one and only one run of the world -- the very last run you just performed.  (Note that exporting might overwrite any other “student-data.csv” files you may have there already from previous simulations. If you want to keep those, save off a copy before exporting.) Rename that file "M4-student-data.csv" and import that file into R:
+```{r}
+library(tidyverse)
+library(stargazer)
+library(ggplot2)
+library(GGally)
+
+# read in data
+studentData <- read.csv("M4-student-data.csv")
+
+# view data
+head(studentData) 
+```
+
+Run a few commands to remind yourself what the data look like, and what type of output each of the commands gives you:
+```{r}
+studentData %>% select(currach,initach,ses) %>% ggpairs()
+
+ggplot(studentData,aes(x=currach, color=as.factor(treat))) + 
+  geom_histogram(fill="black") + 
+  labs(fill = "treat") 
+studentData %>% select(treat, currach) %>% 
+  group_by(treat) %>% summarize(meanCurrent = mean(currach, na.rm=TRUE))
+```
+
+
+### Q1.3
+Run a regression that estimates the mean of current achievement (`currach`) conditional on the value of `treat`, and save the results into an object called `model1`. Look at the estimated coefficient on `treat`. What is it telling you? Does that match your calculation above? Does that match what you already know about the world that created this data? 
+```{r}
+model1 <- lm(currach ~ treat, data = studentData)
+summary(model1)
+```
+
+The coefficient on treat tells us how much higher or lower the average current achievement is for students who received the treatment compared to those who did not. In this instance, the coefficient is approximately 6.798, meaning that students in the treatment group scored about 6.8 points higher on average than students in the control group. 
+This matches the estimated treatment effect calculated as both are measuring the difference in average achievement between the treatment and control groups. 
+The estimate does not exactly match the actual treatment effect of 8 but is within reasonable closeness. This is what I expected to occur as the estimate is based on a sample that is effected by random sampling variation. The true effect built into the simulation is set to 8, and the regression estimate is roughly 6.8 is one possible sample estimate of that true effect. 
+
+
+## Q2
+Run a batch of 200 trials with the same settings as in Question 1. It might take a minute or so to run. If you browser asks you if you want to wait or stop, just wait. When the 200 trials are complete, examine the distribution of the Frequency of Effects Across N Trials plot. Remember, this plot represents the frequency of the means of each of the 200 runs of the world you just executed. You will sometimes hear it referred to as the “sampling distribution of the sample means.”
+
+### Q2.1
+What is the mean and standard deviation of the sampling distribution of the means? What is the largest value across all the trials? The smallest? (There are monitors below the plot that list the highest and lowest means from all the trials you just ran.) Within what range do 95% of the differences fall? 
+
+The mean of the sampling distribution of the effects is 7.89 and is very close to the true set treatment effect of 8. This indicates that on average, the estimator is accurately capturing the true effect. 
+
+The standard deviation of the sampling distribution is 1.76, giving the variation of estimated treatment effect in each population sample due to random chance. 
+
+The largest estimated effect observed over all 200 performed trials is 12.05, and the smallest estimated effect is 2.86. 
+
+Based on simulation output, approximately 95% of the estimated effects were seen between 4.67 and 10.86. The range is determined by the values shown for the lower 2.5% and upper 2.5% cutoffs of the distribution. 
+
+
+### Q2.2
+Suppose you now went out to the real world and collected data on a sample of 150 students, where almost  half of the students were randomly assigned to received the treatment. You observe a difference of 17 points between the mean achievement of the two groups. How likely is it that the world that produced this outcome (in this case the real world) had rules that operated exactly like the rules in our simulation? In particular, focus on the rule set by the `treatment-effect` slider -- that the effect of getting the treatment is to experience an 8 point increase in test scores. Use to distribution in the Frequency of Effects Across N Trials plot to answer this question.
+
+It is highly unlikely that a difference of 17 points would be observed in a real world situation if it operated identically to the simulation where the true treatment effect is set to 8 points. 
+
+In the sampling distribution from the 200 trials, the mean estimated effect is 7.89, where approximately 95% of the realized effects fell between 4.67 and 10.86. The largest estimated effect observed throughout the 200 trials was only 12.05.
+
+Since 17 is far above both the upper 95% cutoff of 10.86, and the highest observed effect of 12.05, an estimated effect of 17 would be highly unusual under the simulations set rules. If the true treatment effect really were 8, we would not expect to see a result as large as 17 due to random variation alone. 
+
+With this information it can be inferred that the real world probably does not operate exactly like the simulation with a treatment effect set to 8 and a result would be unlikely to be seen as high as 17. This leads us to believe that either the true treatment effect is higher than 8 or some other factors are influencing the observed difference between the treatment and control groups. 
+
+
+
+## Q3
+Change the `nbr-people` slider to 500. Change nothing else. Run a batch of 200 trials and examine the distribution of the Frequency of Effects Across N Trials plot. It might take a little while to run so give it a minute to complete. 
+
+### Q3.1
+What is the mean and standard deviation of the sampling distribution of the means? What is the largest value across all the trials? The smallest? 
+
+The mean of the sampling distribution of the effects is 8.02, which is extremely close to the true treatment effect of 8, indicating that the estimator remains accurate on average. 
+
+The standard deviation of the sampling distribution is 1.00, which is less than the previous standard deviation, meaning that the estimates are less variable and more precise when using a larger sample population. 
+
+The largest estimated effect observed is 10.33, while the smallest is 5.71. 
+Approximately 95% of the estimated effects fell between 6.15 and 9.95, with both upper and lower cut offs of 2.5%.
+
+### Q3.2
+Compare the distributions in the Frequency of Effects Across N Trials plot in this question to the one in Question 2, generated by setting  `nbr-people` to 150. What is the same and what is different? Which of the two distributions would you rather be dealing with if you were trying to estimate an unknown difference?
+
+Both the 500 and 150 person sample center around the true treatment effect of 8, therefore both are able to provide accurate estimates on average. The mean effect is 7.89 for the 150 person sample and 8.02 for the 500 person sample. 
+
+The observable difference exists in the amount of spread. For the 150 person sample, the distribution is wider, with a standard deviation of 1.76. The 500 person sample is significantly narrower, with a standard deviation of 1.00. The 150 person sample also produces a larger range of estimates, 2.86 to 12.05, while the 500 person sample is tighter at 5.71 to 10.33. 
+
+The Frequency of Effects Across N Trials plot for the 150 person trial shows increased variation from each performed trial, while the 500 person Frequency of Effects Across N Trials plot is notably more concentrated around the true effect, meaning the larger the sample size, the more consistent and precise the estimates are. 
+
+If I were attempting to estimate an unknown treatment effect, I would prefer the 500 person distribution as it has less sampling variability. The estimates from larger samples tend to be closer to the true value, giving greater confidence in the results. 
+
+
+
+

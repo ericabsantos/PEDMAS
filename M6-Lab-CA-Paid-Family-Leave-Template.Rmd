@@ -1,0 +1,73 @@
+---
+output:
+  html_document:
+    theme: readable
+    df_print: kable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# do not change this chunk
+knitr::opts_chunk$set(echo=T, eval=T, fig.width=6, fig.height=4, warning=F, message=F )
+```
+
+
+# M6 Lab 6 Submission
+Erica Santos
+
+
+# Overview
+In 2004, California was the first state in the U.S. to pass a paid family leave program, providing eligible workers with up to six weeks of partial wage replacement to bond with a new child or care for a seriously ill family member. In this lab, you will be answering a few questions related to the following study that examines the initial impact of that program:
+
+Rossin-Slater, Maya, Christopher J. Ruhm, and Jane Waldfogel. "The effects of California's paid family leave program on mothers’ leave-taking and subsequent labor market outcomes." Journal of Policy Analysis and Management 32.2 (2013): 224-245.
+
+As you read the paper, do not get caught up in the details of how the difference-in-differences model was estimated. The questions will guide you to the parts of the paper you need to understand its findings using the knowledge of linear regression you have already acquired, as well as explain any  terminology you may have not yet encountered. 
+
+
+
+# Questions
+## Q1
+
+In assessing the impact of the PFL program, the authors chose to focus on the the outcomes of leave-taking (e.g., use of maternity leave) and employment (hours worked). From a public policy perspective, explain why those important outcomes to understand.
+
+From the perspective of public policy, leave taking and employment outcomes are critical to evaluate on this level as they speak directly to whether the program is achieving its intended goals as well as whether it is creating unintended consequences. 
+At its core, the purpose of California’s Paid Family Leave program was it make it financially feasible for new parents, notably mothers, to be able to take time off after the birth of a child. Prior to PFL, many wouldn’t be able to afford unpaid leave under the federal Family and Medical Leave Act, or FMLA. By examining whether eligible mothers actually increased their use of maternity leave, policymakers can assess whether the wage replacement benefit successfully removed the financial barrier. If take-up rates didn’t increase meaningfully, it would suggest the benefit level was too low, workers were unaware of the program, or other barriers such as job security fears, remained the binding constraints. Understanding leave-taking is essentially a measure of program reach and effectiveness at its most basic level. 
+Examining subsequent hours worked addresses a more contested question: does taking paid leave help or harm a mother’s long run labor market attachment? There are competing theoretical predictions at this level. One side being that adequate bonding time could improve maternal health and employer attachment, leading to an increase in stable employment upon return. The other side being that critics are concerned that extended leave could lead to skill depreciation, signaling lower commitment to employers, or create incentives to exit the workforce entirely, reducing overall hours or employment rates overtime. 
+From a policy design standpoint, these points matter greatly. A program that increases leave-taking but substantially reduces subsequent employment could raise concerns about long term economic self-sufficiency for mothers and the fiscal cost to the state. Conversely, if employment outcomes are neutral or positive, it strengthens the case that paid leave is a net benefit. With these two outcomes in mind, policymakers are required to evaluate both the immediate and long term consequences of the program, a vital pairing for responsible cost-benefit analysis and for deciding whether to expand, modify or replicate the program in other states. 
+
+
+## Q2
+New mothers were eligible for PFL only if they were already working (otherwise it wouldn't be considered "leave"). One of the challenges of this study is that it is difficult to be entirely sure who to include in this group. The authors took two approaches. The first was to include as eligible, only mothers who had worked in the prior calendar year. They refer to estimates from this definition as "treatment-on-the-treated" (TOT) estimates. The authors also take a second approach that does not condition on previous year employment status, which they refer to an "intent-to-treat" (ITT) approach. Note that this use of the term does not exactly match our discussion of ITT in  class. *For the purposes of this assignment, let's ignore the ITT approach, and focus exclusively on the TOT estimates.* 
+
+A second challenge of this analysis is picking an appropriate comparison group. The authors presented results that compared women in CA with infant children (the treatment group) to several different comparison groups ranging from women in CA with children aged 5-17 (Comparison Group 1) to women with infants in other states (Comparison Groups 3 and 4). A key point to keep in mind is that with a difference-in-difference model, the key assumption is that in the absence of the treatment, the people in the treatment group and the people in the control group would have *changed* in the same way. The authors believed that this statement was most true for other mothers in CA (who faced the same economic conditions during that time period), so they used Comparison Group 1 as the default comparison group. The other comparison groups were used as secondary, reinforcing evidence. *For the purposes of this question, we will focus exclusively on Comparison Group 1 as well.* 
+
+The first row of Table 2 presents the results of 4 different regressions used to get the TOT estimates of the effects of the PFL on leave-taking. The authors used four different measures of "leave-taking" -- maternity leave, family leave, other leave, and any leave. The note in Table 2 explains that rather than present every coefficient from all of their regressions, they only present the coefficient of the variable that represents the difference-in-differences estimate of the PFL program -- i.e., the coefficient for the dummy variable that indicates the difference between how much the dependent variable changed after PFL was implemented for the treatment group in comparison to how much it changed for the control group. For example, if the coefficient on that dummy variable was 0.02, then the PFL program is estimated to lead to a 2 percentage point increase in the amount of leave-taking (e.g., if before the reform only 1.5% of the treatment group would take leave after becoming a new mother, the coefficient implies that after the reform 3.5% of new mothers take leave).
+
+Using the TOT estimate presented in Table 2, please comment on whether you think there was an effect of PFL on maternity leave-taking. On p.234 the authors say that the baseline rate of maternity leave-taking before the reform was 5.4%. Compared to that baseline rate, do you think the TOT estimate of the PFL effect on maternity leave-taking in Table 2 is big or small?
+
+Yes, the TOT estimate strongly suggests that PFL had a meaningful positive effect on taking maternity leave. The estimated coefficient is 0.0632, and it is statically significant at the 1% level, as indicated by the three asterisks. With this information we can be highly confident that this effect is not due to random chance. The standard error of 0.0126 is small in comparison to the coefficient, increasing confidence that this is a precise and reliable estimate. 
+
+The effect is relatively large in comparison to the baseline rate. Prior to the reform, 5.4% of new mothers in the treatment group took maternity leave. The TOT estimate of 0.0632 implies that PFL increased maternity leave taking by roughly 6.32 percentage points, increasing the estimated post reform rate to approximately 11.7%.
+
+In relative terms, this represents more than a doubling of the baseline rate, with an increase of about 117%. By most standards, this is an economically large effect. For a program whose primary goal was to make leave financially accessible to working mothers who previously couldn’t afford to take it, this suggests the wage replacement benefit was quite effective at changing the behavior.
+
+
+
+## Q3
+On p.238 the authors state "...past research suggests that unpaid maternity leave primarily benefits relatively advantaged (e.g., college-educated and married) mothers, so it is interesting to examine whether paid time off work makes leave-taking more accessible to disadvantaged mothers." Table 6 presents the answer to their question. Table 6 can be interpreted exactly the same way as Table 2, except that it has separate sections for different subgroups. For example, it has a section for the subgroup "Mothers with high school degree or less" which estimated the PFL effect only for that group; a section for the subgroup "Mothers with some college" which estimated the PFL effect only for that group; and so on. For example, the section using the subgroup "Mothers with high school degree or less" indicates that the baseline fraction of maternity leave-taking for that subgroup was 2.4%, and that the PFL effect for that group was 0.0498 (i.e., increased the baseline fraction 4.98 percentage points from 2.4 to 7.38). 
+
+Pick one of the subgroups presented in Table 6 and comment on how much of an effect, if any, the PFL program had  for that group. (For the purpose of this question, we can focus on the lines that say "Estimated PFL Effect" and ignore the lines that say "Implied TOT from ITT" estimate.) More generally, do you agree with the statement that unpaid maternity leave primarily benefit advantaged mothers?
+
+**Focus Subgroup: Unmarried Mothers**
+
+Unmarried mothers represent on eof the most striking cases in Table 6. Prior to PFL, their baseline maternity leave-taking rate was 1.9%, the lowest of any subgroup in the table, showing the acute constraints that make unpaid leave essentially inaccessible for single income households. The TOT estimate for PFL’s effect on maternity leave is 0.0724 and is statistically significant at the 5% level. 
+
+This represents an increase of about 7.24 points from the baseline of 1.9%, implying a post reform rate of roughly 9.1%, which is nearly a quadruple increase. The effect on “any leave” is even more dramatic with a coefficient of 0.1308, significant at the 1% level, meaning that the share of unmarried mothers taking any form of leave increased by over 13 percentage points from a baseline of 2.7%. These effects are extraordinarily large.
+
+The data in Table 6 broadly supports the authors’ claim, with a notable nuance. Observing the pre-PFL baseline rates, that reflects the behaviors under the unpaid leave regime, the advantaged mothers were already taking more leave. College educated mothers had a baseline maternity leave rate of 9.4%, married mothers had a rate of 6.3%, and non-Hispanic white mothers with a rate of 7.1%. In comparison to the disadvantaged groups, the numbers drop severely, those with a high school degree or less had a rate of leave-taking of 2.4%, those unmarried and Black mothers, a rate of 1.9%.
+
+These rates confirm that unpaid leave disproportionately benefited those who could already afford to use it. However, if observing the PFL effect estimates, the largest relative gains went to the most disadvantaged groups, suggesting that paid leave is a meaningful equalizer. It is to be noted that the college-educated group shows a statistically insignificant maternity leave effect of 0.0430 with no asterisks, suggesting that PFL added little for a group already able to take leave unpaid. 
+
+Overall, the data strongly supports the conclusion that unpaid leave is primarily a benefit for advantaged mothers, while paid leave meaningfully extends access to those who were previously priced out of taking it. 
+
+
