@@ -1,0 +1,769 @@
+---
+title: "Lab 5"
+output:
+  html_document:
+    theme: readable
+    df_print: paged
+    highlight: tango
+    toc: yes
+    toc_float: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set( echo=T, message=F, warning=F, image.width=10)
+```
+
+
+
+
+
+
+
+
+
+
+# Load Data
+
+```{r}
+library( dplyr )
+library( scales )
+library( stargazer )
+library( pander )
+
+# STARGAZER OUTPUT
+#
+# Use:
+#
+#   s.type="text"
+#
+# while running chunks interactively
+# to see table output.
+# This sets it to "html"
+# when knitting the file.
+s.type="html"
+```
+
+
+```{r, eval=F, echo=F}
+# run this chunk to preview stargazer tables prior to knitting
+s.type="text"
+```
+
+
+```{r}
+URL <- "https://github.com/DS4PS/cpp-524-sum-2021/blob/main/labs/data/counterfactuals.csv?raw=true"
+d <- read.csv( URL )
+
+# set factor levels
+d$group <- factor( d$group, 
+                   levels=c("high.ses","treatment","control"))
+```
+
+
+
+
+
+```{r, fig.height=8, fig.width=8, echo=F}
+
+t <- tapply( d$ability, list(d$group,d$time), mean )
+
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="darkred", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+title( main="Average Outcomes of Study Groups" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="darkred", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+segments( x0=50, y0=-2, y1=3.2, lty=3, col="darkred" )
+text( 50, 3.7, "Start of \nTreatment \nPeriods", col="darkred" )
+
+```
+
+
+
+
+
+# Reflexive Pre-Post Estimator (T2-T1)
+
+
+
+```{r, fig.height=8, fig.width=8, echo=F}
+
+t <- tapply( d$ability, list(d$group,d$time), mean )
+
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+title( main="Average Outcomes of Study Groups" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+
+
+points( x[2:3], t[2,2:3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+
+```{r, results="asis"}
+dm <- filter( d, 
+              group %in% c("treatment") &
+              time %in% c("time1","time2") )
+
+dm$post.dummy <- ifelse( dm$time=="time2", 1, 0 )
+
+m <- lm( ability ~ post.dummy, data=dm )
+
+stargazer( m, type=s.type, 
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+## Question 1a
+
+> What is the average score for kids in the treatment group in period 1 of the study? What is the average score for the same kids in period 2?
+
+The treatment group averaged -0.72 in period one, or the constant, and 2.19 in period 2. (-0.72+2.91 = 2.19).
+
+
+## Question 1b
+
+> Explain what it means when b0 is statistically significant in the reflexive model. Explain what it means when b1 is statistically significant.
+
+When b0 is significant, the treatment group's average ability score in T1 is statistically different from zero. A significant b1 means the change, or gain, in ability from T1 to T2 is statistically different from zero. An example would be tjhat the group's average score moved significantly between the two time periods. 
+
+
+## Question 1c
+
+> What is the effect size according to this model?
+
+The effect size in the relexive model is b1=2.91. Which is the raw pre-post gain for the treatment group. 
+
+
+<br>
+<hr>
+<br>
+
+
+Test for zero trend assumption: C1=C2
+
+```{r, fig.height=6, fig.width=7, echo=F}
+
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+title( main="Average Outcomes of Study Groups" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+# segments( x0=50, y0=t[1,2], y1=3.2, lty=3, col="steelblue" )
+# text( 50, 3.7, "Start of \nTreatment \nPeriods", col="steelblue" )
+
+points( x[2:3], t[3,2:3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+```{r, results="asis"}
+dm <- filter( d, 
+              group %in% c("control") &
+              time %in% c("time1","time2") )
+
+dm$post.dummy <- ifelse( dm$time=="time2", 1, 0 )
+
+m <- lm( ability ~ post.dummy, data=dm )
+
+stargazer( m, type=s.type, 
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+
+## Question 2a
+
+> What is the average score for kids in the control group in period 1 of the study? What is the average score for the same kids in period 2?
+
+The control group averaged -0.65 in period 1 and 0.63 in period 2. (-0.65+1.28 ~ 0.64)
+
+
+## Question 2b
+
+> Which coefficient represents the test for whether we observe a secular trend in student achievement gains independent of the treatment? What is the decision rule?
+
+The post.dummy coefficient of b1=1.28 tests for th secular trend, or the change over time for a group that received no treatment. Decision rule: if b1 is statistically significant, we conclude that there is a secular trend independent of treatment, if it's not siginificant, we can't reject the assumption of zero trend. 
+
+## Question 2c
+
+> What does this model tell us about the appropriateness of the reflexive model?
+
+Since b1=1.28 is significant at p<0.01, there is a meaningful secular trend, the control group gained ability over time without intervention. This tells us the reflexive model is not appropriate here. Part of the 2.91 point gain seen in the treatment group's reflexive estimate is likely due to this same trend, not the treatment itself, so the reflexive estimate is biased upward. 
+
+
+<br>
+<hr>
+<br>
+
+
+
+# Post-Test Only Estimator (T2-C2)
+
+
+```{r, fig.height=8, fig.width=8, echo=F}
+
+t <- tapply( d$ability, list(d$group,d$time), mean )
+
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+# segments( x0=50, y0=t[1,2], y1=3.2, lty=3, col="steelblue" )
+# text( 50, 3.7, "Start of \nTreatment \nPeriods", col="steelblue" )
+
+points( c(64,64), t[2:3,3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+
+
+```{r, results="asis"}
+dm <- filter( d, 
+              group %in% c("treatment","control") &
+              time=="time2" )
+
+dm$treat.dummy <- ifelse( dm$group=="treatment", 1, 0 )
+
+m <- lm( ability ~ treat.dummy, data=dm )
+
+stargazer( m, type=s.type, 
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+
+## Question 3a
+
+> What is the average score for kids in the control group in the study? What is the average score for the kids in the treatment group? 
+
+In T2, the control group average 0.64 and the treatment group average 2.19. (0.61+1.55 = 2.19)
+
+
+## Question 3b
+
+> What is the effect size identified by the model?
+
+The effect size is b1=1.55
+
+## Question 3c
+
+> What is the identifying assumption of this model? Or stated differently, what must be true in order for the post-test only estimator to be appropriate?
+
+The Identifying assumption is that the treatment and control groups are equivalent at baseline with no selection bias, absent any pre-existing differences, any post-treatment gap can be attributed to the treatment. 
+
+## Question 3d
+
+> According to the model below is the assumption met? How can you tell?
+
+In the T1-only model, treat.dummy = -0.07 and is not statistically significant. This tells us sthe groups were not meaningfully different prior to treatment. The equivalence assumption is met, and supports the validity of the post-test-only estimate. 
+
+
+```{r, results="asis"}
+dm <- filter( d, 
+              group %in% c("treatment","control") &
+              time=="time1" )
+
+dm$treat.dummy <- ifelse( dm$group=="treatment", 1, 0 )
+
+m <- lm( ability ~ treat.dummy, data=dm )
+
+stargazer( m, type=s.type, 
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+<br>
+<hr>
+<br>
+
+
+
+# Diff-in-Diff Estimator [ gains - trend ]
+
+Total Gains: T2-T1  
+Trend: C2-C1  
+DID Estimator: [ gains - trend ] = [ (T2-T1) - (C2-C1) ]   
+
+
+```{r, fig.height=8, fig.width=8, echo=F}
+
+t <- tapply( d$ability, list(d$group,d$time), mean )
+
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+# segments( x0=50, y0=t[1,2], y1=3.2, lty=3, col="steelblue" )
+# text( 50, 3.7, "Start of \nTreatment \nPeriods", col="steelblue" )
+
+points( x[2:3], t[2,2:3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+points( x[2:3], t[3,2:3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+
+
+```{r, results="asis"}
+dm <- filter( d, group %in% c("treatment","control") &
+                time %in% c("time1","time2") )
+
+dm$treat.dummy <- ifelse( dm$group=="treatment", 1, 0 )
+dm$post.dummy  <- ifelse( dm$time=="time2", 1, 0 )
+
+dm$treat.post.dummy <- dm$treat.dummy * dm$post.dummy
+
+m <- lm( ability ~ treat.dummy + post.dummy + treat.post.dummy,
+         data=dm)
+
+stargazer( m, type=s.type, 
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+
+```{r}
+b0 <- m$coefficients[1] %>% as.numeric() %>% round(2)
+b1 <- m$coefficients[2] %>% as.numeric() %>% round(2)
+b2 <- m$coefficients[3] %>% as.numeric() %>% round(2)
+b3 <- m$coefficients[4] %>% as.numeric() %>% round(2)
+
+b0                 # C1
+b0 + b1            # T1
+b0 + b2            # C2
+b0 + b1 + b2 + b3  # T2
+b0 + b1 + b2       # CF
+
+CF <- b0 + b1 + b2
+T2 <- b0 + b1 + b2 + b3   
+T2-CF
+```
+
+
+## Question 4a
+
+> Are the treatment and control groups equivalent prior to the intervention? How do you know?
+
+Yes. treat.dummy=-0.07 and is not significant, so treatment and control groups don't differ meaningfully prior to the intervention. 
+
+## Question 4b
+
+> Do we observe secular trends (gains independent of the treatment)? How do you know?
+
+Yes. post.dummy=1.28 and is significant, p<0.01. The control group experience meaningful gains over time even without treatment, confirming a secular trend.
+
+## Question 4c
+
+> What is the effect size in this model (gains from the treatment)?
+
+The effect size is b3 = treat.post.dummy = 1.63
+
+
+## Question 4d
+
+> What does statistical significance of b3 represent? In other words, which contrast is being tested?
+
+Statistical significance of b3 represents whether teh treatment group's gain over time differs from the control group's gain, or trend, over the same time period. It's ultilately testing the actual treatment effect net of the underlying secular trend, comparing (T2-T1) To (C2-C1). 
+
+
+<br>
+<hr>
+<br>
+
+
+## Question 5a
+
+> Do the reflexive and diff-in-diff models generate the same results (approximately)?  Why?
+
+No, reflexive results to 2.91, DiD results to 1.63. They differ because the reflexive model doeszn't remove the secular trend, it attributes the whole pre-post gain in teh treatment group to treatment, when about 1.28 of it reflects the trent that would have happened anyway. 
+
+## Question 5b
+
+> Do the post-test only and diff-in-diff models generate the same results (approximately)? Why?
+
+Yes, post-test only give 1.55 and DiD gives 1.63. This makes sense because the baseline equivalance assumption is held, treat.dummy was not significant in T1. When groups start out equal, a simple post test comparison and the DiD estimator converge on similar answers. 
+
+
+
+<br>
+<hr>
+<br>
+
+
+
+# Alternative Diff-in-Diff Estimator 
+
+```{r, fig.height=8, fig.width=8, echo=F}
+
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+# segments( x0=50, y0=t[1,2], y1=3.2, lty=3, col="steelblue" )
+# text( 50, 3.7, "Start of \nTreatment \nPeriods", col="steelblue" )
+
+points( x[2:3], t[2,2:3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+points( x[2:3], t[1,2:3], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+```{r, results="asis"}
+dm <- filter( d, group %in% c("treatment","high.ses") &
+                time %in% c("time1","time2") )
+
+dm$treat.dummy <- ifelse( dm$group=="treatment", 1, 0 )
+dm$pre.dummy   <- ifelse( dm$time=="time1", 1, 0 )
+dm$post.dummy  <- ifelse( dm$time=="time2", 1, 0 )
+
+dm$treat.post.dummy <- dm$treat.dummy * dm$post.dummy 
+
+m <- lm( ability ~ treat.dummy + post.dummy + treat.post.dummy,
+         data=dm)
+
+stargazer( m, type=s.type,
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+
+## Question 6a
+
+> Are the pre-treatment differences (C1=T1?) different in this model versus the previous diff-in-diff? Why or why not?
+
+Yes. treat.dummy=-2.16 and is highly significant, versus -0.07 and nonsignificant in the treatment versus control model. The high-SES group starts at a muhc higher baseline ability level than the treatment group, while the control group did not. 
+
+
+
+## Question 6b
+
+> Does the diff-in-diff model require that study groups are equivalent prior to treatment to generate valid results?
+
+No, DiD does not require groups to be equivalent at baseline, the only requirement is without treatment, they would have parallel trends. Differences in starting level as fine as long as the rate of change over time would be similar. 
+
+
+## Question 6c
+
+> Is the secular trend identified by this model different from the previous diff-in-diff (approximately)? Why or why not?
+
+They are roughly similar in concept, but not identical in magnitude. The trend of post.dummy=1.71, is larger than in the control-based model of 1.28. Both indicate a secular trend, though the estimated size differs somewhat depending on which comparison group is used. 
+
+
+
+## Question 6d
+
+> The treatment effects from this model are approximately the same as the previous diff-in-diff model, even though they use very different comparison groups. Why does this model still work using the high SES group?
+
+Since DiD relies on the comparison group tracking the trend the treatment group would have experienced without treatment, not the level. Even though high-SES group starts much higher, its rate of change over time from T1-T2 approximates what the treatment groups trend would have ben absent over time. That's the reason for the treatment effect estimate of 1.20 being in the same realm of the control based DiD estimate of 1.63, despite teh very different baseline levels. 
+
+
+
+## Question 6e
+
+> What is the identification assumption of the diff-in-diff model?
+
+The identifying assumption of DiD is the parallel trends assumption: absent treatment, the treatment and compairson groups would have experienced the same trend over time, and not that they start at the same level. 
+
+
+<br>
+<hr>
+<br>
+
+# Parallel Lines Test
+
+Does the high SES group model secular trend appropriately?
+
+Test: are the study group trend lines parallel prior to the intervention?
+
+```{r, fig.height=8, fig.width=8, echo=F}
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+# segments( x0=50, y0=t[1,2], y1=3.2, lty=3, col="steelblue" )
+# text( 50, 3.7, "Start of \nTreatment \nPeriods", col="steelblue" )
+
+points( x[1:2], t[2,1:2], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+points( x[1:2], t[1,1:2], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+```{r, results="asis"}
+dm <- filter( d, group %in% c("treatment","high.ses") &
+                time %in% c("time0","time1") )
+
+dm$treat.dummy <- ifelse( dm$group=="treatment", 1, 0 )
+dm$pre.dummy   <- ifelse( dm$time=="time0", 1, 0 )
+dm$post.dummy  <- ifelse( dm$time=="time1", 1, 0 )
+
+dm$treat.post <- dm$treat.dummy * dm$post.dummy 
+
+m <- lm( ability ~ treat.dummy + post.dummy + treat.post,
+         data=dm)
+
+stargazer( m, type=s.type,
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+Does the control group model secular trend appropriately?
+
+Test: are the study group trend lines parallel prior to the intervention? 
+
+```{r, fig.height=8, fig.width=8, echo=F}
+x <- c(42,50,64,78)
+plot.new()
+plot.window( xlim=c(40,90), ylim=c(-2,5) )
+
+segments( x0=50, y0=-2, y1=3.1, lty=3, col="gray50" )
+text( 50, 3.5, "Start of \nTreatment \nPeriods", col="gray50" )
+
+abline( h=-2:5, lty=2, col="gray70" )
+abline( h=-1.5:4.5, lty=3, col="gray85" )
+points( x, t[1,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[2,], type="b", pch=19, col="steelblue", cex=3 )
+points( x, t[3,], type="b", pch=19, col="steelblue", cex=3 )
+axis( side=1 )
+axis( side=2, las=1 )
+title( xlab="Age (months)", ylab="Ability (logits)" )
+
+text( 80, t[1,4], "High SES", col="steelblue", pos=4 )
+text( 80, t[2,4], "Treatment Group", col="steelblue", pos=4 )
+text( 80, t[3,4], "Control Group", col="steelblue", pos=4 )
+
+# segments( x0=50, y0=t[1,2], y1=3.2, lty=3, col="steelblue" )
+# text( 50, 3.7, "Start of \nTreatment \nPeriods", col="steelblue" )
+
+points( x[1:2], t[2,1:2], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+points( x[1:2], t[3,1:2], 
+        type="b", pch=19, col="darkred", cex=4, lwd=2, lty=3 )
+```
+
+```{r, results="asis"}
+dm <- filter( d, group %in% c("treatment","control") &
+                time %in% c("time0","time1") )
+
+dm$treat.dummy <- ifelse( dm$group=="treatment", 1, 0 )
+dm$post.dummy  <- ifelse( dm$time=="time1", 1, 0 )
+
+dm$treat.post <- dm$treat.dummy * dm$post.dummy 
+
+m <- lm( ability ~ treat.dummy + post.dummy + treat.post,
+         data=dm)
+
+stargazer( m, type=s.type,
+           omit.stat=c("f","ser","adj.rsq"),
+           intercept.top=TRUE, intercept.bottom=FALSE,
+           digits=2 )
+```
+
+## Question 7
+
+> Which coefficient captures the parallel lines test? Do we want it to be significant or not?
+
+The interaction or treat.post coefficient captures the parallel lines test, testing whether the pre-treatment trend differs between groups. This coefficient needs to not be statistically significant, a non-significant interaction supports the parallel treat assumption, where the two groups were moving similarly prior to treatment initiation. Both pre-tests here support this, with the high-SES treat.post=-0.43 and is non-significant, and control treat.post =-0.08 which is also non-significant and passes the parallel-trends check.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+
+-----
+
+<br>
+
+
+
+```{css, echo=F}
+body{
+     font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+     font-size:calc(1.5em + 0.25vw);
+     font-weight:300;line-height:1.65;
+     -webkit-font-smoothing:antialiased;
+     -moz-osx-font-smoothing:grayscale;
+     margin-left:20%;
+     margin-right:20%} 
+     
+
+h1, h2, h3, h4 { color: #995c00; }
+
+h2 { margin-top:80px; }
+
+
+
+.footer {
+  background-color:#726e6e;
+  height:340px;
+  color:white;
+  padding: 20px 3px 20px 3px;
+  margin:0px;
+  line-height: normal;
+}
+
+.footer a{ color:orange; text-decoration:bold !important; } 
+ 
+ 
+ 
+ table{
+   border-spacing:1px;
+   margin-top:80px;
+   margin-bottom:100px !important;
+   margin-left: auto;
+   margin-right: auto;
+   align:center} 
+
+
+ 
+td{ padding: 6px 10px 6px 10px } 
+
+th{ text-align: left; } 
+
+blockquote {
+    margin-top:80px;
+    border-left: 5px solid #995c00;
+    color: #995c00;
+}
+```
+
+
+
+
